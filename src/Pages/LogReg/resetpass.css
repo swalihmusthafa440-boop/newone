@@ -1,0 +1,26 @@
+.resetall{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding-top: 16rem;
+    background-color: beige;
+}
+.resetall input{
+    width: 20rem;
+    height: 40px;
+    border: 1px solid green;
+    border-radius: 10px;
+    outline: transparent;
+}
+.resetall button{
+    width: 25%;
+    height: 40px;
+    margin-top: 8px;
+    background: transparent;
+    border: 1px solid green;
+    border-radius: 8px;
+}
+.resetall h3{
+    color: rgb(84, 117, 106);
+}

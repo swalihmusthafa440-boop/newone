@@ -1,0 +1,29 @@
+.forgot_pass{
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    padding-top: 15rem;
+    background-color: beige;
+}
+.forgot_pass input{
+    height: 40px;
+    width: 25%;
+    border: 1px solid green;
+    background-color: beige;
+    border-radius: 8px;
+    outline: transparent;
+}
+.forgot_pass button{
+    width: 15%;
+    height: 5vh;
+    margin-top: 10px;
+    border: 1px solid green;
+    color: green;
+    border-radius: 8px;
+    background-color: beige;
+}
+
+.forgot_pass h2{
+    color: rgb(84, 117, 106);
+}

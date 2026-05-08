@@ -1,0 +1,81 @@
+
+.login{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding-top: 8rem;
+    background-color: rgb(248, 237, 237);
+}
+.usernamelogin{
+    width: 400px;
+    box-sizing: border-box;
+    height: 25px;
+
+}
+.usernamelogin input {
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+    outline: transparent;
+}
+.passwordlogin{
+    width: 400px;
+    box-sizing: border-box;
+    height: 4vh;
+}
+.passwordlogin input {
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+    outline: transparent;
+}
+
+.submitlogin{
+    width: 400px;
+    box-sizing: border-box;
+    padding-top: 4px;
+    height: 1px;
+    position: relative;
+    z-index: 10;
+}
+.submitlogin button{
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+    cursor: pointer;
+}
+.passwordlogin input ::placeholder {
+    display: flex;
+}
+.create{
+    display: flex ;
+    padding-top: 17rem;
+}
+.remember {
+    display: flex;
+    justify-content: space-between;
+    width: 27%;
+    max-width: 27%;
+    padding-top: 1px;
+}
+.heading{
+    color: rgb(84, 117, 106);
+}
+.errorstyle{
+    width: 550px;
+    height: 30px;
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    
+}
+.errorstyle p{
+    width: 100%;
+}

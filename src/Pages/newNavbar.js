@@ -3,6 +3,7 @@ import './newNavbar.css'
 import { Link } from 'react-router-dom'
 import Slider from './normal/slider'
 import { useNavigate } from 'react-router-dom'
+import Product from './product'
 function Newnavbar() {
   const navigate = useNavigate()
   const handleLogout= async () => {
@@ -47,6 +48,9 @@ function Newnavbar() {
       <h3 style={{paddingLeft:'16px',color: 'rgb(84, 117, 106)' }}>Products</h3>
       <div>
         <ProductCard/>
+      </div>
+      <div>
+        <Product/>
       </div>
     </div>
     </div>

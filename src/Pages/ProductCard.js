@@ -4,7 +4,6 @@ function ProductCard(item) {
 
 
     
-
     return(
         <div>
             <Link to={`/product/${item.id}`}>

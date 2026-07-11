@@ -1,8 +1,27 @@
 
+import { useEffect, useState } from 'react'
 import './cart.css'
-import { useNavigate } from "react-router-dom"
-function Carts({cartitems,setcartitems}) {
+import { data, useNavigate } from "react-router-dom"
 
+
+function Carts() {
+  const [cartitems, setcartitems] = useState([])
+  useEffect(()=> {
+    fetch('http://127.0.0.1:8000/add_to_cart',{
+      headers: {
+        "Content-Type":"appliction/json",
+        "user": localStorage.getItem("userId")
+      }
+    })
+      .then((responce) => responce.json())
+      .then((data)=> {
+        setcartitems(data);
+    })
+    .catch((err)=> {
+      console.log(err)
+    }
+  )
+  },[]);
 
   const navigate=useNavigate()
   const totalPrice = cartitems.reduce((total,item)=> {
@@ -43,8 +62,11 @@ function Carts({cartitems,setcartitems}) {
             <button className="btn btn-outline-success me-0">Search</button>
           </form>
         </nav>
+        
+
         <div className="cart-container">
           <div className="cart-left">
+            
             {cartitems.map((product)=>(
             <div className="empty" key={product.id} >
               <img src={product.image} alt="cart-img" className="cart-img" onClick={()=> navigate(`/product/${product.product_name}/${product.id}`)} style={{cursor:"pointer"}}/>

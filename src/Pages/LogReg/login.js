@@ -16,11 +16,13 @@ function Sulojana(){
       },
       body:JSON.stringify({username:name,password:pass})
     })
-    const data=await response.json()
+    const data = await response.json();
 
-    if (response.status===200){
-      localStorage.setItem("isLoggedIn","true")
-      navigate('/newnavbar')
+    if (response.status === 200) {
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+      localStorage.setItem("isLoggedIn", "true");
+        navigate('/newnavbar')
     }
     else{
       setwrong(data.error)

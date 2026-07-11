@@ -23,7 +23,7 @@ function ProductList(params) {
             <img src={item.image} alt="cart-img" className="cart-img" onClick={()=> navigate(`/product/${item.id}`)} style={{cursor:"pointer"}}/>
                 <div className="product-info" onClick={()=> navigate(`/product/${item.id}`)} style={{cursor:"pointer"}}>
                   <h3 style={{fontSize:'17px'}}>{item.product_name}</h3>
-                  <p style={{color:'green'}}>{item.price * item.quantity}</p>
+                  <p style={{color:'green'}}>{item.price }</p>
                 </div>  
         </div>
     ))}

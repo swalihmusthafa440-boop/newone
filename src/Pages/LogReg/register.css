@@ -1,0 +1,65 @@
+.App{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: antiquewhite;
+
+.bold{
+    color: rgb(84, 117, 106);
+}
+.passwordregister{
+    width: 28%;
+    box-sizing: border-box;
+    height: 25px;
+}
+.passwordregister input{
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+}
+.userregister{
+    width: 28%;
+    box-sizing: border-box;
+    height: 25px;
+}
+.userregister input{
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+}
+.loginformat{
+    display: flex;
+    justify-content:left;
+    width: 230px;
+}
+.emailregister{
+    width: 28%;
+    box-sizing: border-box;
+}
+.emailregister input{
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;    
+}
+}
+.buttonregister{
+    width: 28%;
+    box-sizing: border-box;
+    height: 22px;
+
+}
+.buttonregister button{
+    width: 100%;
+    border: transparent;
+    border-radius: 10px;
+    background-color: white ;
+    height: 35px;
+    cursor: pointer;
+}

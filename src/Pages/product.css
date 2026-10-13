@@ -1,0 +1,8 @@
+.home-info{
+    display: flex;
+    flex-wrap: wrap;
+    
+}
+.product-info{
+    width: 150px;
+}

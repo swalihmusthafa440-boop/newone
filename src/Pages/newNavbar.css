@@ -1,0 +1,46 @@
+/* Navbar background */
+.custom-navbar {
+  background-color: #212529;
+  padding: 10px 15px;
+}
+
+/* Brand style */
+.brand-text {
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff !important;
+}
+
+.productsdetail{
+  width: 100%;
+  padding: 5px; 
+  display: flex;
+  overflow-x:auto ;
+  scroll-behavior: smooth;
+  cursor: pointer;
+}
+  
+
+.productsdetail img{
+    margin-left: 5px;
+    height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    min-width: 250px;
+    flex-shrink: 0;
+}
+
+.cartsection button{
+  
+  width: 70px;
+  height: 37px;
+  background-color: transparent;
+  border-radius: 5px;
+  border: 1px solid green;
+  color: green;
+  transition: 0.3s;
+}
+.cartsection button:hover{
+  background-color: green;
+  color: white;
+}

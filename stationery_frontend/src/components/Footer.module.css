@@ -1,0 +1,238 @@
+.footer {
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  color: var(--text);
+  transition: background var(--transition-slow), border-color var(--transition-slow);
+}
+
+/* Value Props */
+.valueProps {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 32px 0;
+}
+
+.valuePropsInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.propItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.propIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform var(--transition);
+}
+
+.propItem:hover .propIcon {
+  transform: scale(1.08);
+}
+
+.propTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.propDesc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Main Footer */
+.mainFooter {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 24px 36px;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 40px;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 380px;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logoBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandName {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.brandAbout {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.badgeRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trustBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+}
+
+/* Link Columns */
+.linksCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.colTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.linkList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footerBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.footerBtn:hover {
+  color: var(--primary);
+  transform: translateX(3px);
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.contactIcon {
+  font-size: 1rem;
+}
+
+/* Bottom Bar */
+.bottomBar {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  background: var(--bg);
+}
+
+.bottomInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.legalLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.legalLinks span:not(:nth-child(2n)) {
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.legalLinks span:not(:nth-child(2n)):hover {
+  color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .valuePropsInner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .footerGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .valuePropsInner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .bottomInner {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,143 @@
+.page { min-height: 100vh; background: var(--bg); }
+.content { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+
+.pageHeader { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; gap: 16px; }
+.pageTitle { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.pageSubtitle { color: var(--text-muted); font-size: 0.875rem; margin-top: 4px; }
+.shopBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 18px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.shopBtn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+.loading { display: flex; flex-direction: column; gap: 16px; }
+.orderSkeleton { height: 80px; border-radius: var(--radius-lg); }
+
+.empty {
+  text-align: center; padding: 80px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.emptyIcon { font-size: 4rem; }
+.emptyTitle { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+.emptyDesc { color: var(--text-secondary); font-size: 0.9rem; }
+.emptyBtn {
+  margin-top: 8px;
+  padding: 11px 28px;
+  background: var(--primary); color: white; border: none; border-radius: var(--radius-md);
+  font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all var(--transition);
+}
+.emptyBtn:hover { background: var(--primary-hover); }
+
+.orderList { display: flex; flex-direction: column; gap: 16px; }
+.orderCard {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  overflow: hidden; transition: box-shadow var(--transition);
+}
+.orderCard:hover { box-shadow: var(--shadow-md); }
+.orderCardOpen { box-shadow: var(--shadow-md); border-color: var(--primary); }
+
+.orderHeader {
+  padding: 20px 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  user-select: none;
+}
+.orderLeft { display: flex; flex-direction: column; gap: 4px; }
+.orderNumber { font-size: 1rem; font-weight: 700; color: var(--text); }
+.orderDate { font-size: 0.8rem; color: var(--text-muted); }
+.orderRight { display: flex; align-items: center; gap: 12px; }
+.statusBadge {
+  padding: 5px 12px; border-radius: var(--radius-full);
+  font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+}
+.orderTotal { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.chevron { color: var(--text-muted); transition: transform var(--transition); display: flex; }
+.chevronOpen { transform: rotate(180deg); }
+
+.orderBody {
+  border-top: 1px solid var(--border); padding: 24px;
+  display: flex; flex-direction: column; gap: 20px;
+  animation: slideInUp 0.2s ease;
+}
+
+/* Tracker */
+.tracker { display: flex; align-items: flex-start; gap: 0; margin-bottom: 4px; }
+.trackerStep { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.trackerDot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--border); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.6rem; z-index: 1; flex-shrink: 0;
+  transition: all var(--transition);
+}
+.trackerDone .trackerDot { background: var(--primary); border-color: var(--primary); }
+.trackerLabel { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); margin-top: 6px; text-align: center; }
+.trackerDone .trackerLabel { color: var(--primary); font-weight: 600; }
+.trackerLine {
+  position: absolute;
+  top: 14px; left: calc(50% + 14px);
+  width: calc(100% - 28px); height: 2px;
+  background: var(--border);
+  transition: background var(--transition);
+}
+.trackerLineDone { background: var(--primary); }
+
+.itemsSection {}
+.sectionTitle { font-size: 0.875rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.itemsList { display: flex; flex-direction: column; gap: 8px; }
+.item {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px;
+  align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border);
+}
+.item:last-child { border-bottom: none; }
+.itemName { font-size: 0.875rem; font-weight: 500; color: var(--text); }
+.itemQty { font-size: 0.8rem; color: var(--text-muted); }
+.itemPrice { font-size: 0.8rem; color: var(--text-muted); }
+.itemSubtotal { font-size: 0.875rem; font-weight: 700; color: var(--text); }
+
+.infoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.infoCard {
+  padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md);
+  border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;
+}
+.infoLabel {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.infoValue { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+.couponTag { font-size: 0.78rem; color: var(--success); font-weight: 500; }
+
+.orderFooter {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 16px; border-top: 1px solid var(--border);
+}
+.totalRow { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: var(--text-secondary); }
+.totalAmt { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+.receiptBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  background: none; border-radius: var(--radius-md);
+  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); cursor: pointer;
+  transition: all var(--transition);
+}
+.receiptBtn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+@media (max-width: 600px) {
+  .content { padding: 24px 16px; }
+  .orderHeader { padding: 16px; }
+  .orderBody { padding: 16px; }
+  .infoGrid { grid-template-columns: 1fr; }
+  .item { grid-template-columns: 1fr auto auto; }
+  .itemPrice { display: none; }
+  .pageHeader { flex-direction: column; }
+}

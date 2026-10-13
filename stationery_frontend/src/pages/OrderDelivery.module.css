@@ -1,0 +1,482 @@
+.checkoutPage {
+  min-height: 100vh;
+  background-color: #F4F7FB;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="dark"] .checkoutPage {
+  background-color: #0B132B;
+}
+
+.container {
+  flex: 1;
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* Card Sections matching Reference Image */
+.sectionCard {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid #E8EEF5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-theme="dark"] .sectionCard {
+  background: #1E293B;
+  border-color: #334155;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+[data-theme="dark"] .sectionHeader {
+  border-bottom-color: #334155;
+}
+
+.sectionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0A2540;
+  margin: 0;
+}
+
+[data-theme="dark"] .sectionTitle {
+  color: #F8FAFC;
+}
+
+.savedAddressesBar {
+  background: #F8FAFC;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="dark"] .savedAddressesBar {
+  background: #0F172A;
+  border-color: #334155;
+}
+
+.savedSelect {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  background: #FFFFFF;
+  color: #0F172A;
+}
+
+[data-theme="dark"] .savedSelect {
+  background: #1E293B;
+  border-color: #475569;
+  color: #F8FAFC;
+}
+
+/* Form Fields */
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.inputLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+[data-theme="dark"] .inputLabel {
+  color: #CBD5E1;
+}
+
+.textInput, .selectInput {
+  height: 46px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 0.92rem;
+  color: #0F172A;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+[data-theme="dark"] .textInput, [data-theme="dark"] .selectInput {
+  background: #0F172A;
+  border-color: #475569;
+  color: #F8FAFC;
+}
+
+.textInput:focus, .selectInput:focus {
+  border-color: #0070F3;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.15);
+}
+
+.inputError {
+  border-color: #EF4444 !important;
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.twoColRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .twoColRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Checkbox Row */
+.checkboxRow, .checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.styledCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #0070F3;
+  cursor: pointer;
+}
+
+.checkboxText {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+[data-theme="dark"] .checkboxText {
+  color: #CBD5E1;
+}
+
+/* Confirm the address Button matching Reference */
+.confirmAddressBtn {
+  width: 100%;
+  height: 48px;
+  background: #0A2540;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-top: 6px;
+}
+
+.confirmAddressBtn:hover {
+  background: #06182B;
+}
+
+.confirmed {
+  background: #10B981 !important;
+}
+
+/* Use location Pill Button matching Reference */
+.useLocationBtn {
+  width: 100%;
+  height: 46px;
+  background: #F8FAFC;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+[data-theme="dark"] .useLocationBtn {
+  background: #0F172A;
+  border-color: #475569;
+}
+
+.useLocationBtn:hover {
+  border-color: #0070F3;
+  background: #EBF5FF;
+}
+
+.useLocationLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0A2540;
+}
+
+[data-theme="dark"] .useLocationLeft {
+  color: #F8FAFC;
+}
+
+.locationChevron {
+  font-size: 1.4rem;
+  color: #64748B;
+  font-weight: 300;
+}
+
+/* Payment Options matching Reference */
+.paymentOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paymentOptionRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #FFFFFF;
+}
+
+[data-theme="dark"] .paymentOptionRow {
+  background: #0F172A;
+  border-color: #475569;
+}
+
+.paymentSelected {
+  border-color: #0070F3 !important;
+  background: #F0F7FF !important;
+}
+
+[data-theme="dark"] .paymentSelected {
+  background: #172554 !important;
+}
+
+.radioVisual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radioOuter {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+}
+
+.radioOuterActive {
+  border-color: #0070F3;
+}
+
+.radioInner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0070F3;
+}
+
+.paymentOptionInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.paymentOptionName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0A2540;
+}
+
+[data-theme="dark"] .paymentOptionName {
+  color: #F8FAFC;
+}
+
+.paymentOptionSub {
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+/* Google Pay QR Preview Card */
+.gpayPreviewCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 18px;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+[data-theme="dark"] .gpayPreviewCard {
+  background: #0F172A;
+  border-color: #475569;
+}
+
+.qrCodeBox {
+  background: #FFFFFF;
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gpayLogo {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+/* Promo Code Box */
+.promoWrap {
+  margin-top: 8px;
+}
+
+.promoInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.promoInput {
+  flex: 1;
+  height: 42px;
+  border-radius: 8px;
+  border: 1.5px solid #CBD5E1;
+  padding: 0 12px;
+  font-size: 0.85rem;
+  background: #FFFFFF;
+}
+
+[data-theme="dark"] .promoInput {
+  background: #0F172A;
+  border-color: #475569;
+  color: #F8FAFC;
+}
+
+.promoApplyBtn {
+  padding: 0 16px;
+  background: #0A2540;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.couponOk {
+  color: #10B981;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.couponErr {
+  color: #EF4444;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Summary & Place Order */
+.orderSummaryCard {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid #E8EEF5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-theme="dark"] .orderSummaryCard {
+  background: #1E293B;
+  border-color: #334155;
+}
+
+.summaryTotalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summaryTotalLabel {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0A2540;
+}
+
+[data-theme="dark"] .summaryTotalLabel {
+  color: #F8FAFC;
+}
+
+.summaryTotalVal {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #0070F3;
+}
+
+/* Bottom Place Order Button matching Reference */
+.placeOrderBtn {
+  width: 100%;
+  height: 52px;
+  background: #0A2540;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.placeOrderBtn:hover:not(:disabled) {
+  background: #06182B;
+  transform: translateY(-1px);
+}
+
+.placeOrderBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

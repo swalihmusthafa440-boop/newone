@@ -13,7 +13,7 @@ class CouponSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ['id', 'name', 'phone', 'address_line1', 'address_line2', 'city', 'state', 'pincode', 'is_saved', 'created_at']
+        fields = ['id', 'name', 'phone', 'address_line1','state', 'is_saved', 'created_at']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

@@ -29,8 +29,8 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ['name', 'city', 'state', 'pincode', 'user', 'is_saved']
-    search_fields = ['name', 'city', 'pincode']
+    list_display = ['name', 'state',  'user', 'is_saved']
+    search_fields = ['name',]
     list_filter = ['state', 'is_saved']
 
 

@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import styles from './AuthPage.module.css'
+import {  useLocation } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 
 export default function AuthPage() {
+  const location = useLocation()
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '', first_name: '', last_name: '' })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
-  const { login, register } = useAuth()
+  const { login, register,googleLogin } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
 
@@ -31,7 +34,17 @@ export default function AuthPage() {
     }
     return errs
   }
-
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      await googleLogin(credentialResponse.credential)
+      toast.success('Welcome to StatioMart!')
+      navigate(location.state?.from || '/', { replace: true })
+    } catch (err) {
+      toast.error(
+        err.response?.data?.detail || 'Google login failed. Please try again.'
+      )
+    }
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     const errs = validate()
@@ -45,7 +58,7 @@ export default function AuthPage() {
         await register({ username: form.username, email: form.email, password: form.password, first_name: form.first_name, last_name: form.last_name })
         toast.success('Account created successfully! 🎉')
       }
-      navigate('/')
+      navigate(location.state?.from || '/')
     } catch (err) {
       const data = err.response?.data
       const msg = data?.detail || data?.username?.[0] || data?.email?.[0] || 'Something went wrong. Please try again.'
@@ -191,7 +204,19 @@ export default function AuthPage() {
                   )}
                 </button>
               </form>
+              <div style={{ textAlign: 'center', marginTop: '15px'}}>
+                <p>Or sign in with</p>
 
+                <GoogleLogin 
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error('Google sign-in failed.')}
+                  text="signin_with"
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  width="375"
+                />
+              </div>
               <div className={styles.divider}><span>or</span></div>
 
               <button className={styles.guestBtn} onClick={() => navigate('/')}>

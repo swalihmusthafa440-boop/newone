@@ -36,6 +36,21 @@ export function AuthProvider({ children }) {
     return userData
   }, [])
 
+    const googleLogin = useCallback(async (credential) => {
+    const res = await api.post('/auth/google/', { credential })
+
+    const { access, refresh, user: userData } = res.data
+
+    localStorage.setItem(TOKEN_KEY, access)
+    localStorage.setItem(REFRESH_KEY, refresh)
+    localStorage.setItem(USER_KEY, JSON.stringify(userData))
+
+    setToken(access)
+    setUser(userData)
+
+    return userData
+  }, [])  
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(REFRESH_KEY)
@@ -52,7 +67,7 @@ export function AuthProvider({ children }) {
   const isLoggedIn = !!token && !!user
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoggedIn, updateUser }}>
+    <AuthContext.Provider value={{ user, token, login, register, googleLogin, logout, isLoggedIn, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
@@ -62,4 +77,4 @@ export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
-}
+  }

@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import styles from './CartPage.module.css'
+import { useAuth } from '../context/AuthContext'
 
 export default function CartPage() {
+  const { isLoggedIn } = useAuth()
   const { cartItems, updateQty, removeFromCart, totalAmount, totalItems } = useCart()
   const navigate = useNavigate()
 
@@ -145,7 +147,15 @@ export default function CartPage() {
               </div>
               <button
                 className={styles.proceedBtn}
-                onClick={() => navigate('/checkout')}
+                onClick={() => {
+                  if (isLoggedIn){
+                  navigate('/checkout')
+                }else{
+                  navigate('/auth',{
+                    state :{from:'/checkout'}
+                  })
+                }
+                }}
               >
                 <span>Proceed to Checkout</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

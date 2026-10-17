@@ -2,7 +2,6 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
 })
 
 api.interceptors.request.use(
@@ -67,8 +66,10 @@ export const getReviews = (productId) => api.get(`/products/${productId}/reviews
 export const addReview = (productId, data) => api.post(`/products/${productId}/reviews/`, data)
 export const validateCoupon = (code, order_amount = 0) => api.post('/coupons/validate/', { code, order_amount })
 export const getAdminStats = () => api.get('/admin-stats/')
-export const updateProduct = (id, data) => api.patch(`/products/${id}/`, data)
-export const createProduct = (data) => api.post('/products/', data)
+export const updateProduct = (id, data) =>
+  api.patch(`/products/${id}/`, data)
+export const createProduct = (data) =>
+  api.post('/products/', data)
 export const deleteProduct = (id) => api.delete(`/products/${id}/`)
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/`, { status })
 export const sendChatMessage = (message, context = {}, cart_items = []) => api.post('/chatbot/', { message, context, cart_items })

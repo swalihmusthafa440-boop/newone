@@ -7,7 +7,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.conf import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.db import transaction
+from .models import UserRole
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -26,7 +30,87 @@ def user_data(user):
         'last_name': user.last_name,
         'is_staff': user.is_staff,
     }
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def google_login_view(request):
+    credential = request.data.get('credential')
 
+    if not credential:
+        return Response(
+            {'detail': 'Google credential is required.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # Verify the ID token with Google
+        google_user = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+
+        if google_user.get('iss') not in (
+            'accounts.google.com',
+            'https://accounts.google.com'
+        ):
+            return Response(
+                {'detail': 'Invalid Google token issuer.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not google_user.get('email_verified'):
+            return Response(
+                {'detail': 'Please use a verified Google email.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        google_id = google_user.get('sub')
+        email = google_user.get('email', '').lower().strip()
+
+        if not google_id or not email:
+            return Response(
+                {'detail': 'Google account details are incomplete.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Use Google's stable ID to identify returning users.
+        username = f'google_{google_id}'
+
+        with transaction.atomic():
+            user = User.objects.filter(username=username).first()
+
+            if user is None:
+                # Do not silently connect an existing account by email.
+                if User.objects.filter(email__iexact=email).exists():
+                    return Response(
+                        {
+                            'detail': (
+                                'An account already uses this email. '
+                                'Please contact the administrator to link it.'
+                            )
+                        },
+                        status=status.HTTP_409_CONFLICT
+                    )
+
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    first_name=google_user.get('given_name', ''),
+                    last_name=google_user.get('family_name', ''),
+                )
+
+        tokens = get_tokens_for_user(user)
+
+        return Response({
+            **tokens,
+            'user': user_data(user),
+        })
+
+    except ValueError:
+        return Response(
+            {'detail': 'Google sign-in verification failed.'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -105,3 +189,68 @@ def profile_view(request):
         user.email = new_email
     user.save()
     return Response(user_data(user))
+
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def manage_user_roles(request, user_id=None):
+    if not request.user.is_superuser:
+        return Response(
+            {'detail': 'Only the superuser can manage user roles.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    if request.method == 'GET':
+        users = User.objects.all().order_by('id')
+        data = []
+
+        for user in users:
+            role_info, _ = UserRole.objects.get_or_create(user=user)
+            data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': role_info.role,
+                'is_superuser': user.is_superuser,
+            })
+
+        return Response(data)
+
+    if user_id is None:
+        return Response(
+            {'detail': 'User ID is required.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {'detail': 'User not found.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    if target_user.is_superuser:
+        return Response(
+            {'detail': 'Superuser role cannot be changed here.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    role = request.data.get('role')
+    allowed_roles = ['customer', 'shop_owner', 'admin']
+
+    if role not in allowed_roles:
+        return Response(
+            {'detail': 'Invalid role.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    role_info, _ = UserRole.objects.get_or_create(user=target_user)
+    role_info.role = role
+    role_info.save()
+
+    return Response({
+        'detail': 'User role updated successfully.',
+        'user_id': target_user.id,
+        'role': role_info.role,
+    })

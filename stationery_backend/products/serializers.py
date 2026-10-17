@@ -31,16 +31,15 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'price', 'stock', 'image_url',
             'display_image', 'category', 'category_name', 'is_active',
-            'avg_rating', 'review_count'
+            'avg_rating', 'review_count', 'image'
         ]
 
+
     def get_display_image(self, obj):
-        request = self.context.get('request')
         if obj.image:
-            if request:
-                return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return obj.image_url or ''
-
+    
+    
     def get_review_count(self, obj):
         return obj.reviews.count()

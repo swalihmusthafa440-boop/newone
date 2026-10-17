@@ -41,10 +41,9 @@ class Address(models.Model):
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
     address_line1 = models.CharField(max_length=300)
-    address_line2 = models.CharField(max_length=300, blank=True)
-    city = models.CharField(max_length=100)
+
     state = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=10)
+
     is_saved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

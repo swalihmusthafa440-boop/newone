@@ -125,3 +125,4 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+GOOGLE_CLIENT_ID = "865804327260-bqh3lni4e36sdmfctuskd0280lahr4k4.apps.googleusercontent.com"

@@ -18,6 +18,10 @@ export default function AddProduct({ productToEdit = null, onClose, onSuccess })
   const [stock, setStock] = useState(productToEdit?.stock !== undefined ? productToEdit.stock.toString() : '')
   const [category, setCategory] = useState(productToEdit?.category || '')
   const [imageUrl, setImageUrl] = useState(productToEdit?.image_url || '')
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(
+    productToEdit?.display_image || productToEdit?.image_url || ''
+  )
   const [isActive, setIsActive] = useState(productToEdit?.is_active ?? true)
   
   const [categories, setCategories] = useState([])
@@ -65,15 +69,25 @@ export default function AddProduct({ productToEdit = null, onClose, onSuccess })
     setSubmitting(true)
     setErrors({})
 
-    const payload = {
-      name: name.trim(),
-      description: description.trim(),
-      price: parseFloat(price).toFixed(2),
-      stock: parseInt(stock, 10),
-      category: category ? parseInt(category, 10) : null,
-      image_url: imageUrl.trim() || null,
-      is_active: isActive,
+
+    const payload = new FormData()
+      
+    payload.append('name', name.trim())
+    payload.append('description', description.trim())
+    payload.append('price', parseFloat(price).toFixed(2))
+    payload.append('stock', parseInt(stock, 10))
+    payload.append('is_active', String(isActive))
+      
+    if (category) {
+      payload.append('category', category)
     }
+    
+    if (imageFile) {
+      payload.append('image', imageFile)
+    } else if (imageUrl.trim()) {
+      payload.append('image_url', imageUrl.trim())
+    }
+
 
     try {
       if (isEditing) {
@@ -210,30 +224,59 @@ export default function AddProduct({ productToEdit = null, onClose, onSuccess })
               </div>
             </div>
 
-            {/* Image URL with Preview */}
+            
+            {/* Product Image Upload */}
             <div className={styles.field}>
-              <label className={styles.label}>Image URL</label>
-              <div className={styles.imageInputWrap}>
-                <input
-                  type="url"
-                  className={styles.input}
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                />
-              </div>
-              {imageUrl && (
+              <label className={styles.label}>Product Image</label>
+                            
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className={styles.input}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                
+                  if (!file.type.startsWith('image/')) {
+                    toast.error('Please select an image file.')
+                    e.target.value = ''
+                    return
+                  }
+                
+                  setImageFile(file)
+                  setImagePreview(URL.createObjectURL(file))
+                  setImageUrl('')
+                }}
+              />
+            
+              <span className={styles.previewCaption}>
+                Take a photo using your camera or choose an existing image.
+              </span>
+              
+              {imagePreview && (
                 <div className={styles.imagePreviewWrap}>
                   <img
-                    src={imageUrl}
-                    alt="Preview"
+                    src={imagePreview}
+                    alt="Product preview"
                     className={styles.imagePreview}
-                    onError={(e) => { e.target.style.display = 'none' }}
                   />
-                  <span className={styles.previewCaption}>Image Preview</span>
+            
+                  <button
+                    type="button"
+                    className={styles.cancelBtn}
+                    onClick={() => {
+                      setImageFile(null)
+                      setImagePreview('')
+                      setImageUrl('')
+                    }}
+                  >
+                    Remove Image
+                  </button>
                 </div>
               )}
             </div>
+
 
             {/* Description */}
             <div className={styles.field}>

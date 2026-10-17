@@ -483,6 +483,7 @@
 [data-theme="dark"] .inputArea {
   background: #1E293B;
   border-color: #334155;
+  
 }
 
 .input {
@@ -493,14 +494,14 @@
   border: 1px solid #CBD5E1;
   border-radius: 9999px;
   font-size: 0.85rem;
-  color: #0F172A;
+  color: #0c0c0c;
   transition: border-color 0.2s, background-color 0.2s;
 }
 
 [data-theme="dark"] .input {
   background: #0F172A;
   border-color: #475569;
-  color: #F8FAFC;
+  color: #080808;
 }
 
 .input:focus {

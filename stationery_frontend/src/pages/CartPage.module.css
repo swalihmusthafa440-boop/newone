@@ -125,22 +125,16 @@
 
 .imageBox {
   width: 88px;
-  height: 88px;
-  min-width: 88px;
+  height: 78px;
+  min-width: 78px;
   border-radius: 10px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
   display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
 .productImg {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 6px;
+  height: 78px;
 }
 
 .detailsBox {
@@ -150,7 +144,7 @@
 }
 
 .productTitle {
-  font-size: 1.05rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #0F172A;
   margin: 0 0 2px;
@@ -162,7 +156,7 @@
 }
 
 .productSubtitle {
-  font-size: 0.8rem;
+  font-size: 0.6rem;
   color: #64748B;
   margin: 0 0 6px;
 }
@@ -173,10 +167,8 @@
   font-weight: 700;
 }
 
-.actionsRow {
-  display: flex;
-  margin-left: 3.5rem;
-}
+
+
 .leftColumn {
   display: flex;
   flex-direction: column;
@@ -221,7 +213,7 @@
 }
 
 .qtyBtn:hover:not(:disabled) {
-  background: #E2E8F0;
+  background: #4684d6;
 }
 
 .qtyBtn:disabled {
@@ -242,14 +234,10 @@
 }
 
 /* Remove button matching reference outline with trash icon */
-.priceRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
+.btnrmv{
+  margin-left: 21rem;
+  margin-top: 1rem;
 }
-
 .removeBtn {
   align-items: center;
   gap: 6px;
@@ -261,14 +249,14 @@
   color: inherit;
   cursor: pointer;
   white-space: nowrap;
+  height: 30px;
+}
+.removeBtn:hover:not(:disabled){
+  background: rgb(206, 60, 60);
+  color: white;
   
 }
 
-.removeBtn:hover {
-  background: #dc2626;
-  color: white;
-  border-color: #dc2626;
-}
 
 [data-theme="dark"] .removeBtn {
   background: #1E293B;
@@ -348,8 +336,8 @@
 .proceedBtn {
   width: 100%;
   height: 52px;
-  background: #0A2540;
-  color: #FFFFFF;
+  background: #f4f6f8;
+  color: #131111;
   border: none;
   border-radius: 10px;
   font-size: 1.05rem;
@@ -363,7 +351,8 @@
 }
 
 .proceedBtn:hover {
-  background: #06182B;
+  color: white;
+  background: #282929;
   transform: translateY(-1px);
 }
 
@@ -431,4 +420,11 @@
 
 .startShoppingBtn:hover {
   background: #005BD4;
+}
+@media screen and (max-width:600px) {
+  .btnrmv{
+    margin-left: 3.5rem;
+    margin-top: 1rem;
+    
+  }
 }

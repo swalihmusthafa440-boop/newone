@@ -11,57 +11,7 @@ export default function Footer() {
       <div className={styles.valueProps}>
         <div className={styles.valuePropsInner}>
           <div className={styles.propItem}>
-            <div className={styles.propIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-            </div>
-            <div>
-              <h4 className={styles.propTitle}>100% Genuine Products</h4>
-              <p className={styles.propDesc}>Curated top-quality stationery brands</p>
-            </div>
-          </div>
-
-          <div className={styles.propItem}>
-            <div className={styles.propIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="1" y="3" width="15" height="13"/>
-                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                <circle cx="5.5" cy="18.5" r="2.5"/>
-                <circle cx="18.5" cy="18.5" r="2.5"/>
-              </svg>
-            </div>
-            <div>
-              <h4 className={styles.propTitle}>Express Delivery</h4>
-              <p className={styles.propDesc}>Fast doorstep delivery across India</p>
-            </div>
-          </div>
-
-          <div className={styles.propItem}>
-            <div className={styles.propIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-            </div>
-            <div>
-              <h4 className={styles.propTitle}>Easy Returns</h4>
-              <p className={styles.propDesc}>Hassle-free 7-day return policy</p>
-            </div>
-          </div>
-
-          <div className={styles.propItem}>
-            <div className={styles.propIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="1" y="4" width="22" height="16" rx="2"/>
-                <path d="M1 10h22"/>
-              </svg>
-            </div>
-            <div>
-              <h4 className={styles.propTitle}>Cash on Delivery</h4>
-              <p className={styles.propDesc}>Pay safely when your package arrives</p>
-            </div>
+          
           </div>
         </div>
       </div>

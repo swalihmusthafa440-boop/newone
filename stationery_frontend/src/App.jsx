@@ -12,7 +12,7 @@ import OrderHistory from './pages/OrderHistory'
 import AuthPage from './pages/AuthPage'
 import AdminDashboard from './pages/AdminDashboard'
 import NotFound from './pages/NotFound'
-import Chatbot from './components/Chatbot'
+import Chatbot from './components/chatbot'
 import FloatingCart from './components/FloatingCart'
 import './index.css'
 

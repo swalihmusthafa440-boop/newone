@@ -108,24 +108,24 @@ export default function CartPage() {
                             (item.description.length > 45 ? '...' : '')
                             : 'Premium Stationery'}
                         </p>
-                        <div className={styles.pricerow}>
-                          <div className={styles.unitPrice}>₹ {Math.round(itemPrice)}</div>
-
-                            <div className={styles.actionsRow}>
-                              <button
-                                className={styles.removeBtn}
-                                onClick={() => removeFromCart(item.id)}
-                                aria-label={`Remove ${item.name} from cart`}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                                <span>Remove Item cart</span>
-                              </button>
-                            </div>
-                          </div>
+                        
+                        <div className={styles.unitPrice}>₹ {Math.round(itemPrice)}</div>
+                        <div className={styles.btnrmv}>
+                          <button
+                          className={styles.removeBtn}
+                          onClick={() => removeFromCart(item.id)}
+                          aria-label={`Remove ${item.name} from cart`}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            <span>Remove Item cart</span>
+                          </button>
                         </div>
+                        </div>
+                        
+                        
                       </div>
 
                     <div className={styles.itemFooter}>

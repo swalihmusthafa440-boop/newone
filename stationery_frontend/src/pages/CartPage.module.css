@@ -44,11 +44,12 @@
 }
 
 .brandIcon {
-  width: 32px;
-  height: 32px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 9px;
+  overflow: hidden;
 }
 
 .brandName {
@@ -421,10 +422,51 @@
 .startShoppingBtn:hover {
   background: #005BD4;
 }
-@media screen and (max-width:600px) {
-  .btnrmv{
-    margin-left: 3.5rem;
-    margin-top: 1rem;
-    
-  }
-}
+
+@media screen and (max-width: 600px) {
+
+    .cardMain {
+        height: auto;
+        min-height: 120px;
+        align-items: flex-start;
+    }
+
+    .detailsBox {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .productTitle,
+    .productSubtitle {
+        overflow-wrap: anywhere;
+    }
+
+    .btnrmv {
+        margin-left: 0;
+        margin-top: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        box-sizing: border-box;
+    }
+
+    .removeBtn {
+        width: fit-content;
+        max-width: 100%;
+        height: auto;
+        min-height: 30px;
+        white-space: normal;
+        font-size: 14px;
+        padding: 8px 10px;
+        box-sizing: border-box;
+    }
+    .brandIcon {
+      display: flex;
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 9px;
+      overflow: hidden;
+      
+    }
+} 

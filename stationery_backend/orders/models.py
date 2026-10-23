@@ -52,7 +52,7 @@ class Address(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.name} - {self.city}"
+        return f"{self.name} `"
 
 
 class Order(models.Model):
@@ -78,6 +78,14 @@ class Order(models.Model):
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    store = models.ForeignKey(
+        "auth_api.Store",
+        on_delete=models.PROTECT,
+        related_name="orders",
+        null=True,
+        blank=True,
+    )
+
 
     class Meta:
         ordering = ['-created_at']

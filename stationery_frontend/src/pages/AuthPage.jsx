@@ -205,8 +205,8 @@ export default function AuthPage() {
                 </button>
               </form>
               <div style={{ textAlign: 'center', marginTop: '15px'}}>
-                <p>Or sign in with</p>
-
+                <p style={{fontSize:"14px", color:"grey"}}>or sign in with</p>
+                
                 <GoogleLogin 
                   onSuccess={handleGoogleSuccess}
                   onError={() => toast.error('Google sign-in failed.')}
@@ -214,7 +214,7 @@ export default function AuthPage() {
                   theme="outline"
                   size="large"
                   shape="pill"
-                  width="375"
+                  width={window.innerWidth <= 767 ? "265" : "375"}
                 />
               </div>
               <div className={styles.divider}><span>or</span></div>

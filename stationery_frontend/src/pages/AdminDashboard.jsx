@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import AddProduct from '../components/AddProduct'
 import styles from './AdminDashboard.module.css'
 
+
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending', color: '#F59E0B', bg: '#FFFBEB' },
   { value: 'confirmed', label: 'Confirmed', color: '#3B82F6', bg: '#EFF6FF' },
@@ -30,6 +31,17 @@ export default function AdminDashboard() {
   const toast = useToast()
 
   const [tab, setTab] = useState('overview') // 'overview' | 'orders' | 'products'
+  const [reportFromDate, setReportFromDate] = useState(
+    new Date().toLocaleDateString('en-CA')
+  )
+  const [reportToDate, setReportToDate] = useState(
+    new Date().toLocaleDateString('en-CA')
+  )
+  const [reportCategory, setReportCategory] = useState('all')
+  const [reportData, setReportData] = useState(null)
+  const [reportLoading, setReportLoading] = useState(false)
+  const [reportError, setReportError] = useState('')
+
   const [stats, setStats] = useState(null)
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
@@ -162,6 +174,61 @@ export default function AdminDashboard() {
   const outOfStockCount = products.filter((p) => p.stock === 0).length
   const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 5).length
 
+  const getReport = async () => {
+    if (!reportFromDate || !reportToDate) {
+      setReportError('Please select both dates.')
+      return
+    }
+
+    if (reportFromDate > reportToDate) {
+      setReportError('From Date cannot be after To Date.')
+      return
+    }
+
+    setReportLoading(true)
+    setReportError('')
+
+    try {
+      const token =
+        localStorage.getItem('stationery_access_token') ||
+        localStorage.getItem('access_token')||
+        localStorage.getItem('access')
+
+      if (!token) {
+        throw new Error('Please login again.')
+      }
+
+      const params = new URLSearchParams({
+        from_date: reportFromDate,
+        to_date: reportToDate,
+        category: reportCategory,
+      })
+
+      const response = await fetch(
+        `/api/admin/reports/category-sales/?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Failed to load report.'
+        )
+      }
+
+      setReportData(data)
+    } catch (error) {
+      setReportError(error.message || 'Failed to load report.')
+    } finally {
+      setReportLoading(false)
+    }
+  }
+
   return (
     <div className={styles.page}>
       <Header />
@@ -210,6 +277,17 @@ export default function AdminDashboard() {
             onClick={() => setTab('products')}
           >
             🛍️ Products Catalog ({products.length})
+          </button>
+          <button
+            className={`${styles.tabBtn} ${
+              tab === 'reports' ? styles.tabBtnActive : ''
+            }`}
+            onClick={() => {
+              setTab('reports')
+              getReport()
+            }}
+          >
+            📊 Reports
           </button>
         </div>
 
@@ -619,6 +697,147 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               </div>
+            )}
+          </div>
+        )}
+        {/* ================= REPORTS TAB ================= */}
+        {!loading && tab === 'reports' && (
+          <div className={styles.tabSection}>
+            <h2 className={styles.panelTitle}>
+              📊 Category-wise Reports
+            </h2>
+        
+            {/* Date and category filters */}
+            <div className={styles.filterRow}>
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  className={styles.filterSelect}
+                  value={reportFromDate}
+                  onChange={(e) => setReportFromDate(e.target.value)}
+                />
+              </div>
+        
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  className={styles.filterSelect}
+                  value={reportToDate}
+                  onChange={(e) => setReportToDate(e.target.value)}
+                />
+              </div>
+        
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>
+                  Category
+                </label>
+                <select
+                  className={styles.filterSelect}
+                  value={reportCategory}
+                  onChange={(e) => setReportCategory(e.target.value)}
+                >
+                  <option value="all">All Categories</option>
+                  {(reportData?.categories || []).map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+                
+              <button
+                className={styles.addSecondaryBtn}
+                onClick={getReport}
+                disabled={reportLoading}
+              >
+                {reportLoading ? 'Loading...' : 'Get Report'}
+              </button>
+            </div>
+                
+            {reportError && (
+              <p role="alert" style={{ color: '#dc2626' }}>
+                {reportError}
+              </p>
+            )}
+
+            {reportLoading && (
+              <p>Generating report...</p>
+            )}
+
+            {reportData && !reportLoading && (
+              <>
+                <div className={styles.panelCard}>
+                  <div className={styles.tableResponsive}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Category</th>
+                          <th>Items Sold</th>
+                          <th>Sales</th>
+                          <th>Expense</th>
+                          <th>Gross Profit</th>
+                        </tr>
+                      </thead>
+            
+                      <tbody>
+                        {reportData.report.map((item) => (
+                          <tr key={item.category_id}>
+                            <td>{item.category}</td>
+                            <td>{item.items_sold}</td>
+                            <td>
+                              ₹{Number(item.sales).toFixed(2)}
+                            </td>
+                            <td>
+                              ₹{Number(item.expense).toFixed(2)}
+                            </td>
+                            <td>
+                              ₹{Number(item.gross_profit).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+
+                        {reportData.report.length === 0 && (
+                          <tr>
+                            <td colSpan={5}>
+                              No categories found for this Store.
+                            </td>
+                          </tr>
+                        )}
+
+                        <tr>
+                          <td><strong>Total</strong></td>
+                          <td>
+                            <strong>
+                              {reportData.summary.items_sold}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong>
+                              ₹{Number(reportData.summary.sales).toFixed(2)}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong>
+                              ₹{Number(reportData.summary.expense).toFixed(2)}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong>
+                              ₹{Number(reportData.summary.gross_profit).toFixed(2)}
+                            </strong>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         )}

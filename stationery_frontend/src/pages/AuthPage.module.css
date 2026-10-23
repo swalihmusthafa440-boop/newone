@@ -185,3 +185,21 @@
   .row { grid-template-columns: 1fr; }
   .cardBody { padding: 20px; }
 }
+@media screen and (max-width:600px) {
+  .rightPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+.card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+}

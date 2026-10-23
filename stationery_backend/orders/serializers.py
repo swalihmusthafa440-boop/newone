@@ -111,29 +111,80 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             subtotal += unit_price * qty
             items_to_create.append((product, qty, product.price))
 
-        # Handle coupon with authoritative discount calculation
+        # Assign the order to the store that owns its products
+        stores = [product.store for product, qty, price in items_to_create]
+
+        if any(store is None for store in stores):
+            raise serializers.ValidationError({
+                "store": "One or more products have no assigned store."
+            })
+
+        store_ids = {store.id for store in stores}
+
+        if len(store_ids) != 1:
+            raise serializers.ValidationError({
+                "store": "Please order products from one store at a time."
+            })
+
+        store = stores[0]
+        
+        # Validate coupon and enforce one use per account
         coupon_obj = None
         discount_amount = 0.0
+
         if coupon_code:
+            if not user:
+                raise serializers.ValidationError({
+                    'coupon_code': 'Please log in to use a coupon.'
+                })
+
             try:
-                coupon_candidate = Coupon.objects.get(code=coupon_code.strip().upper(), is_active=True)
-                valid, msg = coupon_candidate.is_valid_for_amount(subtotal)
-                if valid:
-                    coupon_obj = coupon_candidate
-                    if coupon_obj.discount_type == 'percent':
-                        discount_amount = round(subtotal * float(coupon_obj.discount_value) / 100.0, 2)
-                    else:
-                        discount_amount = min(float(coupon_obj.discount_value), subtotal)
-                else:
-                    coupon_obj = None
+                coupon_candidate = Coupon.objects.select_for_update().get(
+                    code=coupon_code.strip().upper()
+                )
             except Coupon.DoesNotExist:
-                coupon_obj = None
+                raise serializers.ValidationError({
+                    'coupon_code': 'Invalid coupon code.'
+                })
+
+            # Prevent the same account from using this coupon again
+            already_used = Order.objects.filter(
+                user=user,
+                coupon=coupon_candidate
+            ).exists()
+
+            if already_used:
+                raise serializers.ValidationError({
+                    'coupon_code': 'You have already used this coupon.'
+                })
+
+            valid, msg = coupon_candidate.is_valid_for_amount(subtotal)
+
+            if not valid:
+                raise serializers.ValidationError({
+                    'coupon_code': msg
+                })
+
+            coupon_obj = coupon_candidate
+
+            if coupon_obj.discount_type == 'percent':
+                discount_amount = round(
+                    subtotal * float(coupon_obj.discount_value) / 100.0,
+                    2
+                )
+            else:
+                discount_amount = min(
+                    float(coupon_obj.discount_value),
+                    subtotal
+                )
+
 
         final_total = max(0.0, round(subtotal - discount_amount, 2))
 
         order = Order.objects.create(
             address=address,
             user=user,
+            store=store,
             coupon=coupon_obj,
             discount_amount=discount_amount,
             total_amount=final_total,

@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.exceptions import ValidationError
 from .models import Product, Category, Review
 from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
+from rest_framework.exceptions import PermissionDenied
+from auth_api.store_permissions import get_owned_store
 
 
 class ProductListView(generics.ListCreateAPIView):
@@ -20,16 +22,40 @@ class ProductListView(generics.ListCreateAPIView):
         return [AllowAny()]
 
     def get_queryset(self):
-        # Admin / staff can see all products including inactive; regular shoppers see active only
-        if self.request.user.is_authenticated and self.request.user.is_staff:
-            queryset = Product.objects.all().select_related('category').prefetch_related('reviews')
+        user = self.request.user
+
+        if user.is_authenticated and user.is_staff:
+            store = get_owned_store(user)
+            queryset = Product.objects.all()
+
+            if store is not None:
+                queryset = queryset.filter(store=store)
         else:
-            queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('reviews')
+            queryset = Product.objects.filter(
+                is_active=True,
+                store__is_active=True,
+            )
+
+        queryset = queryset.select_related(
+            'category', 'store'
+        ).prefetch_related('reviews')
 
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category__slug=category)
+
         return queryset
+
+    def perform_create(self, serializer):
+        store = get_owned_store(self.request.user)
+
+        if store is None:
+            raise PermissionDenied(
+                'Choose a store when creating products as superuser.'
+            )
+
+        serializer.save(store=store)
+
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -77,32 +103,51 @@ class ReviewListCreateView(generics.ListCreateAPIView):
             serializer.save(user=self.request.user, product=product)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAdminUser])
 def admin_stats(request):
     from orders.models import Order
     from django.contrib.auth.models import User
     from django.db.models import Sum, Count
+    from auth_api.store_permissions import get_owned_store
 
-    total_orders = Order.objects.count()
-    total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
-    total_products = Product.objects.count()
-    total_users = User.objects.filter(is_staff=False).count()
-    pending_orders = Order.objects.filter(status='pending').count()
-    delivered_orders = Order.objects.filter(status='delivered').count()
-    out_of_stock = Product.objects.filter(stock=0).count()
+    # Superuser sees all data; store admin sees their store
+    if request.user.is_superuser:
+        orders = Order.objects.all()
+        products = Product.objects.all()
+    else:
+        store = get_owned_store(request.user)
+        orders = Order.objects.filter(store=store)
+        products = Product.objects.filter(store=store)
 
-    status_breakdown = list(
-        Order.objects.values('status').annotate(count=Count('id'), revenue=Sum('total_amount'))
+    total_orders = orders.count()
+
+    total_revenue = (
+        orders.aggregate(total=Sum("total_amount"))["total"] or 0
     )
 
+    total_products = products.count()
+
+    pending_orders = orders.filter(status="pending").count()
+    delivered_orders = orders.filter(status="delivered").count()
+
+    out_of_stock = products.filter(stock=0).count()
+
+    status_breakdown = list(
+        orders.values("status").annotate(
+            count=Count("id"),
+            revenue=Sum("total_amount"),
+        )
+    )
+
+    # Keep the existing response keys so the frontend can use them
     return Response({
-        'total_orders': total_orders,
-        'total_revenue': float(total_revenue),
-        'total_products': total_products,
-        'total_users': total_users,
-        'pending_orders': pending_orders,
-        'delivered_orders': delivered_orders,
-        'out_of_stock': out_of_stock,
-        'status_breakdown': status_breakdown,
+        "total_orders": total_orders,
+        "total_revenue": float(total_revenue),
+        "total_products": total_products,
+        "total_users": User.objects.filter(is_staff=False).count(),
+        "pending_orders": pending_orders,
+        "delivered_orders": delivered_orders,
+        "out_of_stock": out_of_stock,
+        "status_breakdown": status_breakdown,
     })

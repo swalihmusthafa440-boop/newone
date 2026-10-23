@@ -244,6 +244,7 @@ def chatbot(request):
                 'reply': "You can cancel any order that is currently in **Pending** status. Please provide your order number (e.g., 'Cancel order #25') so I can process it for you.",
                 'type': 'text'
             })
+        
 
     # ────────────────────────────────────────────────────────────────
     # 3. SPECIFIC ORDER LOOKUP (e.g., "Check order number 25", "Order #12")
@@ -433,26 +434,69 @@ def chatbot(request):
     # 7. PRODUCT AVAILABILITY / PRICE QUERIES (Manglish & English)
     # e.g., "Pen undo?", "Notebook price ethra?", "Is pen available?"
     # ────────────────────────────────────────────────────────────────
-    is_availability_query = any(k in msg_lower for k in ['undo', 'available', 'in stock', 'stock', 'ondoo'])
-    is_price_query = any(k in msg_lower for k in ['price ethra', 'ethra', 'rate', 'cost', 'how much'])
+        # 7. PRODUCT AVAILABILITY / PRICE QUERIES
+    is_availability_query = any(k in msg_lower for k in [
+        'undo', 'available', 'in stock', 'stock', 'ondoo',
+        'out of stock', 'availability'
+    ])
+
+    is_price_query = any(k in msg_lower for k in [
+        'price ethra', 'ethra', 'rate', 'cost', 'how much'
+    ])
 
     if (is_availability_query or is_price_query) and not max_price:
         search_kw = clean_search_term(msg_lower)
+
+        # Remove availability-related words to get the product name
+        search_kw = re.sub(
+            r'\b(is|are|the|product|available|availability|in stock|out of stock|stock|do you have|there any)\b',
+            ' ',
+            search_kw,
+            flags=re.IGNORECASE
+        )
+        search_kw = re.sub(r'\s+', ' ', search_kw).strip()
+
         if search_kw:
             matched_products = find_matching_products(search_kw)
+
             if matched_products:
                 lines = []
+
                 for p in matched_products:
-                    avail_str = f"In Stock ({p.stock} units)" if p.stock > 0 else "Out of stock"
-                    lines.append(f"• **{p.name}** — ₹{p.price} ({avail_str})")
-                reply = f"Here are the details for **{search_kw.title()}**:\n\n" + "\n".join(lines)
+                    if p.stock > 0:
+                        avail_str = f"Available in stock ({p.stock} units)"
+                    else:
+                        avail_str = "Sorry, currently out of stock"
+
+                    lines.append(
+                        f"• **{p.name}** — ₹{p.price} ({avail_str})"
+                    )
+
+                reply = "\n".join(lines)
+
                 return Response({
                     'reply': reply,
                     'type': 'products',
-                    'products': [serialize_product(p, request) for p in matched_products[:6]],
-                    'suggestions': ['My Cart', 'Products Under ₹100', 'Browse Products']
+                    'products': [
+                        serialize_product(p, request)
+                        for p in matched_products[:6]
+                    ],
+                    'suggestions': [
+                        'Browse Products',
+                        'Show All Pens',
+                        'Show Notebooks'
+                    ]
                 })
 
+            return Response({
+                'reply': f"Sorry, I couldn't find a product matching '{search_kw}'.",
+                'type': 'no_results',
+                'suggestions': [
+                    'Browse Products',
+                    'Show All Pens',
+                    'Show Notebooks'
+                ]
+            })
     # ────────────────────────────────────────────────────────────────
     # 8. MATCH AGAINST DATABASE FAQ KNOWLEDGE BASE
     # ────────────────────────────────────────────────────────────────

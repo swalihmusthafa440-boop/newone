@@ -12,21 +12,11 @@ export default function CartPage() {
     <div className={styles.cartPage}>
       {/* Reference Navy-Blue Header */}
       <header className={styles.topNav}>
-        <button
-          className={styles.backIconButton}
-          onClick={() => navigate('/')}
-          aria-label="Back to home"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
+        
 
         <div className={styles.brandGroup} onClick={() => navigate('/')}>
           <div className={styles.brandIcon}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" fill="#0070F3" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img src='/StatioMart.jpeg' />
           </div>
           <span className={styles.brandName}>StatioMart</span>
         </div>

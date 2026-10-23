@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'orders',
     'auth_api',
     'chatbot',
+    'whatsapp',
 ]
 
 MIDDLEWARE = [
@@ -126,3 +127,30 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
 }
 GOOGLE_CLIENT_ID = "865804327260-bqh3lni4e36sdmfctuskd0280lahr4k4.apps.googleusercontent.com"
+
+
+WHATSAPP_ACCESS_TOKEN = os.environ.get(
+    "WHATSAPP_ACCESS_TOKEN", "EAAZAtLA8kdGwBSZCgoWinupNFJjQv3GXjiS3u1HPeNfS8avEZCSsKR25rU0FL2rZBsZBLf5tmOjez6eYxCueZAZAJZB9a5VXx2jPIoNoqdEpnv5L8yf9tPrO8RZAcRnHXXITAqXT0Tic67rRHiVrtkIniWSopKSNc2DwXXLZClE9FXhN9JHSZC3Gm4uJCY1rdbXUAZDZD"
+)
+
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get(
+    "WHATSAPP_PHONE_NUMBER_ID", "1362465503614194"
+)
+
+WHATSAPP_ADMIN_NUMBER = os.environ.get(
+    "WHATSAPP_ADMIN_NUMBER", "919745507271"
+)
+
+WHATSAPP_API_VERSION = os.environ.get(
+    "WHATSAPP_API_VERSION", "v23.0"
+)
+
+WHATSAPP_ORDER_TEMPLATE_NAME = os.environ.get(
+    "WHATSAPP_ORDER_TEMPLATE_NAME",
+    "new_order_notification",
+)
+
+WHATSAPP_ORDER_TEMPLATE_LANGUAGE = os.environ.get(
+    "WHATSAPP_ORDER_TEMPLATE_LANGUAGE",
+    "en",
+)

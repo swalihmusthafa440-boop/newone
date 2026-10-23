@@ -39,39 +39,36 @@ export default function Header() {
       <header className={styles.header}>
         <div className={styles.navRow}>
           {/* Left: Back Arrow on subpages OR Hamburger menu on Home */}
-          {isSubpage ? (
-            <button
-              className={styles.iconBtn}
-              onClick={() => navigate(-1)}
-              aria-label="Go back"
-              title="Back"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              className={styles.iconBtn}
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open menu drawer"
-              title="Menu"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
-          )}
+            {isSubpage ? (
+              <button
+                className={styles.iconBtn}
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
+                title="Back"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                className={styles.iconBtn}
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Open menu drawer"
+                title="Menu"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            )}
 
           {/* Center Brand Logo */}
           <div className={styles.brand} onClick={() => navigate('/')}>
             <div className={styles.logoIcon}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" fill="#0070F3" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              
+              <img src='/StatioMart.jpeg'/>
             </div>
             <span className={styles.brandName}>StatioMart</span>
           </div>
@@ -118,7 +115,7 @@ export default function Header() {
                 {/* User Profile */}
                 <button
                   className={styles.iconBtn}
-                  onClick={() => navigate(isLoggedIn ? '/orders' : '/auth')}
+                  onClick={() => navigate(isLoggedIn ? '/accountpage' : '/auth')}
                   title={isLoggedIn ? (user?.username || 'My Account') : 'Sign In'}
                   aria-label="User account"
                 >
@@ -156,21 +153,9 @@ export default function Header() {
           <aside className={styles.drawer} onClick={e => e.stopPropagation()}>
             {/* Drawer Header */}
             <div className={styles.drawerHeader}>
-              <button
-                className={styles.iconBtn}
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Back"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-              </button>
-
               <div className={styles.brand} onClick={() => { setDrawerOpen(false); navigate('/') }}>
                 <div className={styles.logoIcon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" fill="#0070F3" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
+                  <img src='/StatioMart.jpeg'/>
                 </div>
                 <span className={styles.brandName}>StatioMart</span>
               </div>

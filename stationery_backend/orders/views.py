@@ -6,6 +6,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.exceptions import PermissionDenied
 from .models import Address, Order, Coupon
 from .serializers import AddressSerializer, OrderCreateSerializer, OrderDetailSerializer, CouponSerializer
+from django.db import transaction
+from whatsapp.services import send_order_notification
+from auth_api.store_permissions import get_owned_store
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +42,29 @@ class OrderListCreateView(generics.ListCreateAPIView):
         return [AllowAny()]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            if self.request.user.is_staff:
-                return Order.objects.all().select_related('address', 'coupon').prefetch_related('items__product').order_by('-created_at')
-            return Order.objects.filter(
-                user=self.request.user
-            ).select_related('address', 'coupon').prefetch_related('items__product').order_by('-created_at')
-        return Order.objects.none()
+        user = self.request.user
+
+        queryset = Order.objects.select_related(
+            "address", "coupon", "store"
+        ).prefetch_related(
+            "items__product"
+        ).order_by("-created_at")
+
+        if not user.is_authenticated:
+            return Order.objects.none()
+
+        # Platform superuser can view every store's orders
+        if user.is_superuser:
+            return queryset
+
+        # Store admin can view only their own store's orders
+        if user.is_staff:
+            store = get_owned_store(user)
+            return queryset.filter(store=store)
+
+        # Customers can view only their own orders
+        return queryset.filter(user=user)
+
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -53,18 +72,67 @@ class OrderListCreateView(generics.ListCreateAPIView):
         return OrderDetailSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = OrderCreateSerializer(data=request.data, context={'request': request})
+        serializer = OrderCreateSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+    
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-
+    
+        # Order database-ൽ commit ചെയ്തശേഷം notification അയയ്ക്കുക.
+        transaction.on_commit(
+            lambda order_id=order.pk:
+                self._send_whatsapp_for_order(order_id)
+        )
+    
         result = OrderDetailSerializer(order)
-        return Response(result.data, status=status.HTTP_201_CREATED)
-
+    
+        return Response(
+            result.data,
+            status=status.HTTP_201_CREATED,
+        )
+    
+    
+    @staticmethod
+    def _send_whatsapp_for_order(order_id):
+        try:
+            order = (
+                Order.objects
+                .select_related("address", "user")
+                .prefetch_related("items__product")
+                .get(pk=order_id)
+            )
+    
+            send_order_notification(order)
+    
+        except Exception:
+            logger.exception(
+                "WhatsApp notification failed for order %s",
+                order_id,
+            )
 
 class OrderDetailView(generics.RetrieveUpdateAPIView):
     def get_queryset(self):
-        return Order.objects.select_related('address', 'coupon').prefetch_related('items__product')
-
+        user = self.request.user
+    
+        queryset = Order.objects.select_related(
+            "address", "coupon", "store"
+        ).prefetch_related(
+            "items__product"
+        )
+    
+        if not user.is_authenticated:
+            return queryset.none()
+    
+        if user.is_superuser:
+            return queryset
+    
+        if user.is_staff:
+            store = get_owned_store(user)
+            return queryset.filter(store=store)
+    
+        return queryset.filter(user=user)
     def get_serializer_class(self):
         return OrderDetailSerializer
 
@@ -117,11 +185,36 @@ def validate_coupon(request):
 
     if not code:
         return Response({'error': 'Coupon code is required'}, status=400)
+    
     try:
         coupon = Coupon.objects.get(code=code)
-        valid, msg = coupon.is_valid_for_amount(order_amount_num)
+
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Please log in to use a coupon.'},
+                status=400
+            )
+
+        already_used = Order.objects.filter(
+            user=request.user,
+            coupon=coupon
+        ).exists()
+
+        if already_used:
+            return Response(
+                {'error': 'You have already used this coupon.'},
+                status=400
+            )
+
+        valid, msg = coupon.is_valid_for_amount(order_amount)
+
         if not valid:
             return Response({'error': msg}, status=400)
+
         return Response(CouponSerializer(coupon).data)
+
     except Coupon.DoesNotExist:
-        return Response({'error': 'Invalid or expired coupon code'}, status=400)
+        return Response(
+            {'error': 'Invalid or expired coupon code'},
+            status=400
+        )

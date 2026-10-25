@@ -63,6 +63,18 @@ def send_order_notification(order):
             ", ".join(address_parts) or "Not provided"
         )
 
+        
+        latitude = getattr(order, "latitude", None)
+        longitude = getattr(order, "longitude", None)
+
+        if latitude is not None and longitude is not None:
+            location_link = (
+                f"https://www.google.com/maps?q={latitude},{longitude}"
+            )
+        else:
+            location_link = "Customer location not provided"
+
+
         payment_method = order.get_payment_method_display()
 
         message = (
@@ -75,6 +87,9 @@ def send_order_notification(order):
             f"Delivery: {delivery_address}\n"
             f"Payment: {payment_method}\n"
             f"Status: {order.get_status_display()}"
+            f"Delivery: {delivery_address}\n"
+            f"Location: {location_link}\n"
+            f"Payment: {payment_method}\n"
         )
 
         notification = WhatsAppNotification.objects.create(
@@ -181,6 +196,10 @@ def send_order_notification(order):
                             {
                                 "type": "text",
                                 "text": str(order.total_amount),
+                            },
+                            {
+                                "type": "text",
+                                "text": location_link[:200],
                             },
                         ],
                     }

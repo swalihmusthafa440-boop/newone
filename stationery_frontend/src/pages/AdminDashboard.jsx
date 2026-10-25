@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { getAdminStats, getOrders, getProducts, updateOrderStatus, deleteProduct, updateProduct } from '../api/api'
+import api,{ getAdminStats, getOrders, getProducts, getCategories, updateOrderStatus, deleteProduct, updateProduct } from '../api/api'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import AddProduct from '../components/AddProduct'
@@ -55,6 +55,11 @@ export default function AdminDashboard() {
 
   // Modals & Editing
   const [showAddModal, setShowAddModal] = useState(false)
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [categoryName, setCategoryName] = useState('')
+  const [isSavingCategory, setIsSavingCategory] = useState(false)
+
   const [editingProduct, setEditingProduct] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -91,6 +96,52 @@ export default function AdminDashboard() {
     }
     loadData()
   }, [isLoggedIn, user, navigate, loadData])
+
+
+  const handleAddCategory = async (event) => {
+    event.preventDefault()
+
+    const name = categoryName.trim()
+    const slug = name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+
+
+    if (!name) {
+      toast.error('Please enter a category name')
+      return
+    }
+
+    setIsSavingCategory(true)
+
+    try {
+      await api.post('categories/', { name , slug })
+
+      toast.success(`Category "${name}" added successfully`)
+
+      setCategoryName('')
+      setShowCategoryModal(false)
+
+      await getCategories()
+
+      const productResponse = await getProducts()
+      setProducts(normalizeArray(productResponse?.data))
+    } catch (error) {
+      const detail = error.response?.data?.detail
+      const nameError = error.response?.data?.name
+
+      toast.error(
+        (Array.isArray(nameError) ? nameError[0] : nameError) ||
+        detail ||
+        'Could not add category. Check whether the category API supports POST.'
+      )
+    } finally {
+      setIsSavingCategory(false)
+    }
+  }
+
+
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -593,6 +644,16 @@ export default function AdminDashboard() {
               </div>
 
               <button
+                type="button"
+                className={styles.addCategoryBtn}
+                onClick={() => setShowCategoryModal(true)}
+              >
+                + Add Category
+              </button>
+
+
+
+              <button
                 className={styles.addSecondaryBtn}
                 onClick={() => { setEditingProduct(null); setShowAddModal(true) }}
               >
@@ -841,6 +902,70 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+        {/* Add Category Modal */}
+      {showCategoryModal && (
+        <div
+          className={styles.confirmOverlay}
+          onClick={() =>
+            !isSavingCategory && setShowCategoryModal(false)
+          }
+        >
+          <form
+            className={styles.categoryModal}
+            onSubmit={handleAddCategory}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.categoryModalIcon}>＋</div>
+        
+            <h3 className={styles.confirmTitle}>Add Category</h3>
+        
+            <p className={styles.categoryModalDesc}>
+              Create a category for products in your catalog.
+            </p>
+        
+            <label
+              className={styles.categoryLabel}
+              htmlFor="new-category-name"
+            >
+              Category name
+            </label>
+        
+            <input
+              id="new-category-name"
+              className={styles.categoryInput}
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="e.g. Pens, Notebooks, Art Supplies"
+              maxLength={100}
+              autoFocus
+              required
+            />
+      
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={() => {
+                  setShowCategoryModal(false)
+                  setCategoryName('')
+                }}
+                disabled={isSavingCategory}
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="submit"
+                className={styles.confirmDelete}
+                disabled={isSavingCategory}
+              >
+                {isSavingCategory ? 'Saving...' : 'Save Category'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       </main>
 
       {/* Add / Edit Product Modal */}

@@ -18,7 +18,7 @@ def get_owned_store(user):
     role = UserRole.objects.filter(user=user).first()
 
     if not role or role.role not in ("shop_owner", "admin"):
-        raise PermissionDenied("Store admin access required.")
+        raise PermissionDenied("admin access required.")
 
     store = Store.objects.filter(
         owner=user,

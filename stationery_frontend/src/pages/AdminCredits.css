@@ -1,0 +1,266 @@
+
+.admin-credits-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #172033;
+}
+
+.admin-credits-container {
+  width: min(1150px, 92%);
+  margin: auto;
+  padding: 36px 0 60px;
+}
+
+.admin-credits-heading {
+  margin-bottom: 24px;
+}
+
+.admin-credits-heading h1 {
+  margin: 6px 0;
+  font-size: clamp(26px, 4vw, 36px);
+}
+
+.admin-credits-heading p {
+  color: #64748b;
+}
+
+.admin-credits-eyebrow {
+  color: #2563eb !important;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.admin-credits-search {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.admin-credits-search input,
+.admin-credit-form input,
+.admin-credit-form select {
+  min-width: 0;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  font: inherit;
+  background: #fff;
+}
+
+.admin-credits-search button,
+.admin-credit-primary,
+.admin-credit-secondary {
+  padding: 11px 15px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-credits-search button,
+.admin-credit-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.admin-credit-primary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.admin-credit-secondary {
+  background: #eaf0f8;
+  color: #1e293b;
+}
+
+.admin-credit-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 23px;
+  margin-bottom: 24px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+}
+
+.admin-credit-summary div {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-credit-summary span {
+  font-weight: 800;
+}
+
+.admin-credit-summary small {
+  color: #64748b;
+}
+
+.admin-credit-summary strong {
+  font-size: clamp(24px, 4vw, 32px);
+  color: #b91c1c;
+}
+
+.admin-credit-list {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-credit-card {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgb(15 23 42 / 4%);
+}
+
+.admin-credit-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.admin-credit-card-top h2 {
+  margin: 0 0 5px;
+  font-size: 20px;
+}
+
+.admin-credit-card-top p {
+  margin: 0 0 7px;
+  color: #64748b;
+}
+
+.admin-credit-card-top span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-credit-due {
+  color: #b91c1c;
+  text-align: right;
+  font-size: 22px;
+}
+
+.admin-credit-due small {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-credit-amounts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+  padding: 18px 0;
+  border-top: 1px solid #edf0f5;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.admin-credit-amounts div {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-credit-amounts span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-credit-amounts strong {
+  font-size: 16px;
+}
+
+.admin-credit-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.admin-credit-details,
+.admin-credit-form {
+  margin-top: 18px;
+  padding: 17px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.admin-credit-details h3,
+.admin-credit-form h3 {
+  margin-top: 0;
+}
+
+.admin-credit-details h4 {
+  margin-bottom: 10px;
+}
+
+.admin-credit-payment {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 0;
+  border-top: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.admin-credit-form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-credit-form label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-credit-form p {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-credit-message {
+  padding: 10px 13px;
+  border-radius: 8px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-credit-error {
+  color: #b91c1c;
+}
+
+.admin-credit-empty {
+  background: #fff;
+  padding: 35px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .admin-credits-container {
+    padding-top: 24px;
+  }
+
+  .admin-credits-search {
+    flex-direction: column;
+  }
+
+  .admin-credit-summary {
+    padding: 17px;
+  }
+
+  .admin-credit-card {
+    padding: 15px;
+  }
+
+  .admin-credit-amounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

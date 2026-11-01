@@ -52,7 +52,7 @@ function Profile() {
           role="button"
         >
           <div className="image">
-            <img src="StatioMart.jpeg" />
+            <img src="StatioMart New.jpeg" />
           </div>
           
           <div className="brandname"/>

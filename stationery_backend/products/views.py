@@ -24,8 +24,11 @@ class ProductListView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
+
+
         if user.is_authenticated and user.is_staff:
             store = get_owned_store(user)
+
             queryset = Product.objects.all()
 
             if store is not None:

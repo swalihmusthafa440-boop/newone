@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, Address, Coupon
+from .models import Order, OrderItem, Address, Coupon, DeliveryCashHandover, CustomerCredit,CustomerCreditPayment,CustomerCreditPermission
 
 
 class OrderItemInline(admin.TabularInline):
@@ -39,3 +39,23 @@ class CouponAdmin(admin.ModelAdmin):
     list_display = ['code', 'discount_type', 'discount_value', 'is_active', 'uses', 'valid_until']
     list_editable = ['is_active']
     search_fields = ['code']
+
+
+admin.site.register(DeliveryCashHandover)
+admin.site.register(CustomerCredit)
+admin.site.register(CustomerCreditPayment)
+
+
+@admin.register(CustomerCreditPermission)
+class CustomerCreditPermissionAdmin(admin.ModelAdmin):
+    list_display = (
+        'store',
+        'customer',
+        'is_allowed',
+        'updated_at',
+    )
+    list_filter = ('store', 'is_allowed')
+    search_fields = (
+        'store__name',
+        'customer__username',
+    )

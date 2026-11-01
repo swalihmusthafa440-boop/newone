@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { sendChatMessage } from '../api/api'
 import styles from './Chatbot.module.css'
+import { useAuth } from '../context/AuthContext'
+
 
 const QUICK_ACTIONS = [
   'Browse Products',
@@ -142,7 +144,7 @@ export default function Chatbot() {
   const navigate = useNavigate()
   const location = useLocation()
   const { cartItems, addToCart, removeFromCart } = useCart()
-
+  const { isLoggedIn } = useAuth()
   // EXCLUSION: Do NOT display StatioMart Assistant on Login or Registration page
   const isAuthPage = location.pathname === '/auth'
 
@@ -170,6 +172,9 @@ export default function Chatbot() {
   }, [addToCart])
 
   const sendMessage = useCallback(async (text) => {
+
+
+    
     const msg = (text || input).trim()
     if (!msg || loading) return
 
@@ -194,14 +199,23 @@ export default function Chatbot() {
       const data = res.data
 
       // Execute any backend returned actions
+      // Execute backend returned actions
       if (data.action) {
         if (data.action.type === 'ADD_TO_CART' && data.action.product) {
           addToCart(data.action.product, data.action.quantity || 1)
         } else if (data.action.type === 'REMOVE_FROM_CART' && data.action.productId) {
           removeFromCart(data.action.productId)
+        } else if (data.action.type === 'OPEN_CHECKOUT') {
+          setOpen(false)
+          if (isLoggedIn) {
+            navigate('/checkout')
+          } else {
+            navigate('/auth', {
+              state: { from: '/checkout' }
+            })
+          }
         }
       }
-
       setMessages(prev => [
         ...prev.filter(m => m.id !== typingId),
         {
@@ -229,7 +243,7 @@ export default function Chatbot() {
     } finally {
       setLoading(false)
     }
-  }, [input, loading, cartItems, addToCart, removeFromCart])
+  }, [input, loading, cartItems, addToCart, removeFromCart, navigate, isLoggedIn])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

@@ -16,6 +16,8 @@ import Chatbot from './components/chatbot'
 import FloatingCart from './components/FloatingCart'
 import './index.css'
 import Accountpage from './pages/accountpage'
+import MyCredits from './pages/MyCredits'
+
 
 function App() {
   return (
@@ -35,6 +37,7 @@ function App() {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="*" element={<NotFound />} />
                 <Route path='/accountpage' element={<Accountpage/>}/>
+                <Route path="/my-credits" element={<MyCredits />} />
               </Routes>
               {/* Floating Cart Button near bottom-left on shopping pages */}
               <FloatingCart />

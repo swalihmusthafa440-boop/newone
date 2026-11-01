@@ -74,4 +74,30 @@ export const deleteProduct = (id) => api.delete(`/products/${id}/`)
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/`, { status })
 export const sendChatMessage = (message, context = {}, cart_items = []) => api.post('/chatbot/', { message, context, cart_items })
 
+
+
+/* Delivery cash handover */
+export const getDeliveryHandover = (orderId) =>
+  api.get(`/orders/${orderId}/delivery-handover/`)
+
+export const saveDeliveryHandover = (orderId, data) =>
+  api.post(`/orders/${orderId}/delivery-handover/`, data)
+
+/* Admin customer credits */
+export const getAdminCredits = (params = {}) =>
+  api.get('/credits/', { params })
+
+export const getCreditDetails = (creditId) =>
+  api.get(`/credits/${creditId}/`)
+
+export const updateCustomerCredit = (creditId, data) =>
+  api.patch(`/credits/${creditId}/`, data)
+
+export const recordCreditPayment = (creditId, data) =>
+  api.post(`/credits/${creditId}/payments/`, data)
+
+/* Customer's own credits */
+export const getMyCredits = () =>
+  api.get('/my-credits/')
+
 export default api

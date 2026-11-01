@@ -246,6 +246,19 @@
   font-weight: 300;
 }
 
+.credititem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.chavron {
+  font-size: 1.3rem;
+  color: #94A3B8;
+  font-weight: 300;
+}
+
+
 .drawerFooter {
   padding: 24px 20px;
   background: #F8FAFC;
@@ -299,3 +312,28 @@
   height: 35px;
 }
 }
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .desktopNav {
+    display: none;
+  }
+
+  .logoIcon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .navLink {
+    display: none;
+  }
+}
+
+/* Desktop layout: hide the mobile drawer */
+@media (min-width: 769px) {
+  .credititem,
+  .chavron {
+    display: flex;
+  }
+}
+

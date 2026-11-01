@@ -16,7 +16,7 @@ export default function CartPage() {
 
         <div className={styles.brandGroup} onClick={() => navigate('/')}>
           <div className={styles.brandIcon}>
-            <img src='/StatioMart.jpeg' />
+            <img src='/StatioMart New.jpeg' />
           </div>
           <span className={styles.brandName}>StatioMart</span>
         </div>

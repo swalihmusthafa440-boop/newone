@@ -1,0 +1,213 @@
+
+.my-credits-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #172033;
+}
+
+.my-credits-container {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+  padding: 36px 0 60px;
+}
+
+.my-credits-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.my-credits-heading h1 {
+  margin: 5px 0 8px;
+  font-size: clamp(26px, 4vw, 36px);
+}
+
+.my-credits-heading p {
+  color: #64748b;
+  margin: 0;
+}
+
+.my-credits-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #2563eb !important;
+}
+
+.my-credit-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.my-credit-summary div {
+  display: grid;
+  gap: 6px;
+}
+
+.my-credit-summary span {
+  font-weight: 700;
+}
+
+.my-credit-summary small {
+  color: #64748b;
+}
+
+.my-credit-summary strong {
+  font-size: clamp(23px, 4vw, 32px);
+  color: #dc2626;
+}
+
+.my-credit-list {
+  display: grid;
+  gap: 18px;
+}
+
+.my-credit-card {
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgb(15 23 42 / 4%);
+}
+
+.my-credit-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.my-credit-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.my-credit-card-header h2 {
+  margin: 4px 0 0;
+}
+
+.my-credit-balance {
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-weight: 800;
+}
+
+.my-credit-amounts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 22px 0;
+}
+
+.my-credit-amounts div {
+  display: grid;
+  gap: 8px;
+}
+
+.my-credit-amounts span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.my-credit-amounts strong {
+  font-size: 17px;
+}
+
+.my-credit-history {
+  border-top: 1px solid #edf0f5;
+  padding-top: 16px;
+}
+
+.my-credit-history h3 {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.my-credit-history p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.my-credit-payment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.my-credit-payment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 9px;
+}
+
+.my-credit-payment > div {
+  display: grid;
+  gap: 4px;
+}
+
+.my-credit-payment > div span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.my-credit-method {
+  color: #166534;
+  background: #dcfce7;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.my-credit-empty {
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  text-align: center;
+  padding: 42px 16px;
+}
+
+.my-credit-empty p,
+.my-credit-error {
+  color: #64748b;
+}
+
+.my-credit-error {
+  color: #b91c1c;
+}
+
+@media (max-width: 700px) {
+  .my-credits-container {
+    padding-top: 24px;
+  }
+
+  .my-credit-summary {
+    padding: 18px;
+  }
+
+  .my-credit-card {
+    padding: 16px;
+  }
+
+  .my-credit-amounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+}

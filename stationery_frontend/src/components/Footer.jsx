@@ -68,7 +68,7 @@ export default function Footer() {
             <ul className={styles.linkList}>
               <li className={styles.contactItem}>
                 <span className={styles.contactIcon}>✉️</span>
-                <span>support@statiomart.com</span>
+                <span>swalihmusthafa440@gmail.com</span>
               </li>
               <li className={styles.contactItem}>
                 <span className={styles.contactIcon}>🕒</span>

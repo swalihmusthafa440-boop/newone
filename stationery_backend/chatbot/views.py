@@ -185,6 +185,46 @@ def chatbot(request):
     msg_lower = message.lower().strip()
     max_price = extract_price_filter(msg_lower)
 
+
+        # CHECKOUT INTENT
+    normalized_msg = re.sub(
+        r"[^a-z0-9\s]",
+        "",
+        msg_lower.replace("'", "")
+    )
+    normalized_msg = re.sub(r"\s+", " ", normalized_msg).strip()
+
+    checkout_keywords = [
+        "then proceed",
+        "proceed",
+        "proceed to checkout",
+        "yes proceed",
+        "yes its confirm",
+        "yes its confirmed",
+        "yes its conform",
+        "yes confirm",
+        "confirm checkout",
+        "go to checkout",
+        "place my order"
+    ]
+
+    if any(k in normalized_msg for k in checkout_keywords):
+
+        if not client_cart:
+            return Response({
+                "reply": "Your cart is empty. Please add products first.",
+                "type": "cart_empty"
+            })
+
+        return Response({
+            "reply": "Great! Opening your checkout page.",
+            "type": "checkout",
+            "action": {
+                "type": "OPEN_CHECKOUT"
+            }
+        })
+
+
     # ────────────────────────────────────────────────────────────────
     # 1. GREETING
     # ────────────────────────────────────────────────────────────────
@@ -350,6 +390,29 @@ def chatbot(request):
                 'type': 'auth_required',
                 'suggestions': ['Sign In', 'Browse Products']
             })
+
+
+    # CHECKOUT INTENT
+    checkout_keywords = [
+        'proceed to checkout',
+        'yes proceed',
+        'checkout',
+        'go to checkout',
+        'place my order'
+    ]
+
+    if any(k in msg_lower for k in checkout_keywords):
+        if not client_cart:
+            return Response({
+                'reply': 'Your cart is empty. Please add products first.',
+                'type': 'cart_empty'
+            })
+
+        return Response({
+            'reply': 'Great! Let us proceed to checkout. Please confirm your delivery address and payment method.',
+            'type': 'checkout',
+            'action': {'type': 'OPEN_CHECKOUT'}
+        })
 
     # ────────────────────────────────────────────────────────────────
     # 5. CART ACTIONS & TOTALS ("Show my cart", "What is my cart total?", "Ente cart kaanikku")

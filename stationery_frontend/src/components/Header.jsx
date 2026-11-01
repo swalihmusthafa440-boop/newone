@@ -9,6 +9,22 @@ export default function Header() {
   const { totalItems } = useCart()
   const { dark, toggle } = useTheme()
   const { isLoggedIn, user, logout } = useAuth()
+
+  const handleMyCredits = () => {
+    setDrawerOpen(false)
+
+    if (!isLoggedIn) {
+      navigate('/auth')
+      return
+    }
+
+    if (user?.is_staff) {
+      navigate('/admin')
+    } else {
+      navigate('/my-credits')
+    }
+  }
+
   const navigate = useNavigate()
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -46,9 +62,7 @@ export default function Header() {
                 aria-label="Go back"
                 title="Back"
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
+                
               </button>
             ) : (
               <button
@@ -68,7 +82,7 @@ export default function Header() {
           {/* Center Brand Logo */}
           <div className={styles.brand} onClick={() => navigate('/')}>
             <div className={styles.logoIcon}>
-              <img src='/StatioMart.jpeg'/>
+              <img src='/StatioMart New.jpeg'/>
             </div>
             <span className={styles.brandName}>StatioMart</span>
           </div>
@@ -87,6 +101,10 @@ export default function Header() {
             >
               My Orders
             </button>
+
+            {/* My Credits */}
+            
+
             {user?.is_staff && (
               <button
                 className={styles.navLink}
@@ -94,6 +112,7 @@ export default function Header() {
               >
                 Admin
               </button>
+              
             )}
           </nav>
 
@@ -155,7 +174,7 @@ export default function Header() {
             <div className={styles.drawerHeader}>
               <div className={styles.brand} onClick={() => { setDrawerOpen(false); navigate('/') }}>
                 <div className={styles.logoIcon}>
-                  <img src='/StatioMart.jpeg'/>
+                  <img src='/StatioMart New.jpeg'/>
                 </div>
                 <span className={styles.brandName}>StatioMart</span>
               </div>
@@ -228,6 +247,28 @@ export default function Header() {
                   <span className={styles.chevron}>›</span>
                 </button>
               )}
+              
+              <button
+                className={styles.menuItem}
+                onClick={() => {
+                  setDrawerOpen(false)
+                  if (user){
+                    navigate('/my-credits')
+                  }else {
+                    navigate('/auth')
+                  }
+                }}
+              >
+                <div className={styles.credititem}>
+                  <svg width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M2 10h20M7 15h4" />
+                  </svg>
+                  <span>My Credits</span>
+                </div>
+                <span className={styles.chavron}>›</span>
+              </button>
 
               {isLoggedIn ? (
                 <button

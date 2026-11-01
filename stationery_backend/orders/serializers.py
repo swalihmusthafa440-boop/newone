@@ -13,7 +13,7 @@ class CouponSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ['id', 'name', 'phone', 'address_line1','state', 'is_saved', 'created_at']
+        fields = ['id', 'name', 'phone', 'address_line1','state', 'is_saved','latitude','longitude', 'created_at']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -71,22 +71,61 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user if request and request.user.is_authenticated else None
 
+
         if address_data:
+            address_data = dict(address_data)
+
             if user:
                 address_data['user'] = user
-            address = Address.objects.create(**address_data)
-            validated_data['phone'] = validated_data.get('phone') or address.phone
+
+            # Reuse the selected customer's saved address when possible.
+            address_id_from_data = address_data.pop('id', None)
+
+            if user and address_id_from_data:
+                try:
+                    address = Address.objects.get(
+                        id=address_id_from_data,
+                        user=user
+                    )
+                except Address.DoesNotExist:
+                    raise serializers.ValidationError({
+                        'address_data': 'Selected address does not exist or access is denied.'
+                    })
+
+                for field, value in address_data.items():
+                    setattr(address, field, value)
+
+                address.save()
+            else:
+                address = Address.objects.create(**address_data)
+
+            validated_data['phone'] = (
+                validated_data.get('phone') or address.phone
+            )
+
         elif address_id:
             try:
                 if user and not user.is_staff:
-                    address = Address.objects.get(id=address_id, user=user)
+                    address = Address.objects.get(
+                        id=address_id,
+                        user=user
+                    )
                 else:
                     address = Address.objects.get(id=address_id)
+
             except Address.DoesNotExist:
-                raise serializers.ValidationError({'address_id': 'Selected address does not exist or access is denied.'})
-            validated_data['phone'] = validated_data.get('phone') or address.phone
+                raise serializers.ValidationError({
+                    'address_id': 'Selected address does not exist or access is denied.'
+                })
+
+            validated_data['phone'] = (
+                validated_data.get('phone') or address.phone
+            )
+
         else:
-            raise serializers.ValidationError('Either address_data or address_id is required.')
+            raise serializers.ValidationError(
+                'Either address_data or address_id is required.'
+            )
 
         # Validate items and calculate authoritative subtotal
         subtotal = 0.0

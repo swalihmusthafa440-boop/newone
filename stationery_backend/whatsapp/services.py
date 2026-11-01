@@ -64,15 +64,19 @@ def send_order_notification(order):
         )
 
         
-        latitude = getattr(order, "latitude", None)
-        longitude = getattr(order, "longitude", None)
-
+        
+        address = getattr(order, "address", None)
+        
+        latitude = getattr(address, "latitude", None)
+        longitude = getattr(address, "longitude", None)
+        
         if latitude is not None and longitude is not None:
             location_link = (
                 f"https://www.google.com/maps?q={latitude},{longitude}"
             )
         else:
             location_link = "Customer location not provided"
+
 
 
         payment_method = order.get_payment_method_display()

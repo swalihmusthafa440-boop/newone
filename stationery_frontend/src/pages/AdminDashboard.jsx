@@ -7,6 +7,10 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import AddProduct from '../components/AddProduct'
 import styles from './AdminDashboard.module.css'
+import DeliveryCashHandover from '../components/DeliveryCashHandover'
+import AdminCredits from './AdminCredits'
+
+
 
 
 const STATUS_OPTIONS = [
@@ -24,6 +28,27 @@ function normalizeArray(data) {
   if (Array.isArray(data.data)) return data.data
   return []
 }
+
+async function getAllProducts() {
+  let nextUrl = 'products/'
+  let allProducts = []
+
+  while (nextUrl) {
+    const response = await api.get(nextUrl)
+    const data = response.data
+
+    if (Array.isArray(data)) {
+      allProducts = [...allProducts, ...data]
+      break
+    }
+
+    allProducts = [...allProducts, ...(data.results || [])]
+    nextUrl = data.next
+  }
+
+  return allProducts
+}
+
 
 export default function AdminDashboard() {
   const { isLoggedIn, user } = useAuth()
@@ -63,6 +88,7 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [handoverOrder, setHandoverOrder] = useState(null)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -70,11 +96,12 @@ export default function AdminDashboard() {
       const [sRes, oRes, pRes] = await Promise.all([
         getAdminStats().catch(() => ({ data: null })),
         getOrders(),
-        getProducts()
+        getAllProducts()
       ])
+
       setStats(sRes.data)
       setOrders(normalizeArray(oRes?.data))
-      setProducts(normalizeArray(pRes?.data))
+      setProducts(pRes)
     } catch {
       toast.error('Failed to load dashboard data')
       setOrders([])
@@ -125,10 +152,10 @@ export default function AdminDashboard() {
 
       await getCategories()
 
-      const productResponse = await getProducts()
-      setProducts(normalizeArray(productResponse?.data))
-    } catch (error) {
-      const detail = error.response?.data?.detail
+      const productResponse = await getAllProducts()
+      setProducts(productResponse)    } catch (error) {
+      
+        const detail = error.response?.data?.detail
       const nameError = error.response?.data?.name
 
       toast.error(
@@ -331,6 +358,14 @@ export default function AdminDashboard() {
           </button>
           <button
             className={`${styles.tabBtn} ${
+              tab === 'credits' ? styles.tabBtnActive : ''
+            }`}
+            onClick={() => setTab('credits')}
+          >
+            💳 Customer Credits
+          </button>
+          <button
+            className={`${styles.tabBtn} ${
               tab === 'reports' ? styles.tabBtnActive : ''
             }`}
             onClick={() => {
@@ -340,6 +375,7 @@ export default function AdminDashboard() {
           >
             📊 Reports
           </button>
+
         </div>
 
         {loading && (
@@ -347,6 +383,10 @@ export default function AdminDashboard() {
             <div className={styles.spinner} />
             <p>Loading administrative data...</p>
           </div>
+        )}
+
+        {!loading && tab === 'credits' && (
+          <AdminCredits />
         )}
 
         {/* ================= OVERVIEW TAB ================= */}
@@ -595,6 +635,13 @@ export default function AdminDashboard() {
                             ))}
                           </select>
                         </div>
+                        <button
+                          type="button"
+                          className={styles.receiptBtn}
+                          onClick={() => setHandoverOrder(order)}
+                        >
+                          Cash Handover
+                        </button>
                         <button
                           className={styles.receiptBtn}
                           onClick={() => navigate(`/order-confirmation/${order.id}`)}
@@ -1007,6 +1054,12 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      )}
+      {handoverOrder && (
+        <DeliveryCashHandover
+          order={handoverOrder}
+          onClose={() => setHandoverOrder(null)}
+        />
       )}
 
       <Footer />

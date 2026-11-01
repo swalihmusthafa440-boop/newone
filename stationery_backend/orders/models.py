@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from products.models import Product
 from django.conf import settings
 
+
+from decimal import Decimal
+from django.core.exceptions import ValidationError
+
 class Coupon(models.Model):
     DISCOUNT_TYPES = [
         ('percent', 'Percentage'),
@@ -46,6 +50,19 @@ class Address(models.Model):
 
     is_saved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name_plural = 'addresses'
@@ -109,4 +126,140 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
 
- 
+
+
+
+
+
+class DeliveryCashHandover(models.Model):
+    order = models.OneToOneField(
+        'Order',
+        on_delete=models.CASCADE,
+        related_name='delivery_handover'
+    )
+    delivery_boy_name = models.CharField(max_length=150)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_handed_over = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='delivery_handovers'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def remaining_amount(self):
+        return self.total_amount - self.amount_handed_over
+
+    def clean(self):
+        if self.total_amount < 0 or self.amount_handed_over < 0:
+            raise ValidationError("Amounts cannot be negative.")
+        if self.amount_handed_over > self.total_amount:
+            raise ValidationError(
+                "Amount handed over cannot exceed the total amount."
+            )
+
+    def __str__(self):
+        return f"Cash handover for Order #{self.order_id}"
+
+
+class CustomerCredit(models.Model):
+    order = models.OneToOneField(
+        'Order',
+        on_delete=models.CASCADE,
+        related_name='customer_credit'
+    )
+    order_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    credit_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_payments(self):
+        return self.payments.aggregate(
+            total=models.Sum('amount')
+        )['total'] or Decimal('0.00')
+
+    @property
+    def remaining_credit(self):
+        return max(
+            Decimal('0.00'),
+            self.credit_amount - self.total_payments
+        )
+
+    def clean(self):
+        if min(self.order_amount, self.amount_paid, self.credit_amount) < 0:
+            raise ValidationError("Amounts cannot be negative.")
+        if self.amount_paid + self.credit_amount != self.order_amount:
+            raise ValidationError(
+                "Amount paid plus credit must equal order amount."
+            )
+
+    def __str__(self):
+        return f"Credit for Order #{self.order_id}"
+
+
+class CustomerCreditPayment(models.Model):
+    PAYMENT_METHODS = [
+        ('cash', 'Cash'),
+        ('upi', 'UPI'),
+    ]
+
+    credit = models.ForeignKey(
+        CustomerCredit,
+        on_delete=models.CASCADE,
+        related_name='payments'
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    method = models.CharField(
+        max_length=10,
+        choices=PAYMENT_METHODS,
+        default='cash'
+    )
+    notes = models.CharField(max_length=250, blank=True)
+    received_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.amount <= 0:
+            raise ValidationError("Payment must be greater than zero.")
+
+    def __str__(self):
+        return f"Payment ₹{self.amount} for credit #{self.credit_id}"
+
+class CustomerCreditPermission(models.Model):
+    store = models.ForeignKey(
+        'auth_api.Store',
+        on_delete=models.CASCADE,
+        related_name='customer_credit_permissions'
+    )
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='store_credit_permissions'
+    )
+    is_allowed = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['store', 'customer'],
+                name='unique_store_customer_credit_permission'
+            )
+        ]
+
+    def __str__(self):
+        status = 'Allowed' if self.is_allowed else 'Not Allowed'
+        return f'{self.store.name} - {self.customer.username} - {status}'

@@ -30,7 +30,7 @@ const INITIAL_FORM = {
   address_line1: '',
   city: '',
   state: 'Kerala',
-  pincode: '682001',
+  pincode: '',
   is_saved: true
 }
 
@@ -84,12 +84,14 @@ export default function OrderDelivery() {
   const loaderRef = useRef(null)
   const latitude = locationCoords?.lat ?? null
   const longitude = locationCoords?.lng ?? null
+  const [locationConfirmed, setLocationConfirmed] = useState(false)
 
   useEffect(() => {
     if (cartItems.length === 0) {
       navigate('/cart')
     }
   }, [cartItems, navigate])
+
 
   useEffect(() => {
     if (!isLoggedIn) return
@@ -100,13 +102,39 @@ export default function OrderDelivery() {
         setSavedAddresses(addresses)
 
         if (addresses.length > 0) {
-          setSelectedAddressId(addresses[0].id)
+          const saved = addresses[0]
+
+          setSelectedAddressId(saved.id)
           setUseSavedAddress(true)
+
+          const lat = Number(saved.latitude)
+          const lng = Number(saved.longitude)
+
+          if (
+            saved.latitude != null &&
+            saved.longitude != null &&
+            saved.latitude !== '' &&
+            saved.longitude !== '' &&
+            Number.isFinite(lat) &&
+            Number.isFinite(lng) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            lng >= -180 &&
+            lng <= 180
+          ) {
+            setLocationCoords({ lat, lng })
+            setLocationConfirmed(true)
+          } else {
+            setLocationCoords(null)
+            setLocationConfirmed(false)
+          }
         }
       })
-      .catch(() => setSavedAddresses([]))
+      .catch(err => {
+        console.error('Failed to load saved addresses:', err)
+        setSavedAddresses([])
+      })
   }, [isLoggedIn])
-
 
   // Load Google Maps using the current functional loader API.
   useEffect(() => {
@@ -295,10 +323,10 @@ useEffect(() => {
   }
 
   const handleUseLocation = () => {
+    setLocationConfirmed(false)
     setShowMap(true)
     setMapError('')
   }
-
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast.error('Location is not supported by this browser.')
@@ -309,15 +337,24 @@ useEffect(() => {
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
+        setLocationLoading(false)
+        setShowMap(true)
+      
+        if (coords.accuracy > 100) {
+          toast.warning(
+            `GPS accuracy is poor (about ${Math.round(coords.accuracy)} metres). Please select your house manually on the map.`
+          )
+          return
+        }
+      
         setLocationCoords({
           lat: coords.latitude,
           lng: coords.longitude
         })
-
-        setShowMap(true)
-        setLocationLoading(false)
+      
         toast.success('Location detected! Check your map pin.')
       },
+
       error => {
         setLocationLoading(false)
 
@@ -371,11 +408,37 @@ useEffect(() => {
 
   const grandTotal = Math.max(0, subtotal - discount)
 
+    
+
   const handleSubmit = async e => {
     e.preventDefault()
 
     if (submitting) return
 
+    // Validate delivery location
+  const lat = Number(
+    Number(locationCoords?.lat).toFixed(6)
+  )
+  const lng = Number(
+    Number(locationCoords?.lng).toFixed(6)
+  )  
+    if (
+      !locationConfirmed ||
+      locationCoords?.lat == null ||
+      locationCoords?.lng == null ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng) ||
+      lat < -90 ||
+      lat > 90 ||
+      lng < -180 ||
+      lng > 180
+    ) {
+      toast.error('Please select and confirm your delivery location.')
+      setShowMap(true)
+      return
+    }
+
+    // Validate a new address
     if (!useSavedAddress) {
       const validationErrors = validate()
 
@@ -386,46 +449,59 @@ useEffect(() => {
       }
     }
 
+    // Find the existing saved address
+    const activeAddress = useSavedAddress
+      ? savedAddresses.find(
+          address => Number(address.id) === Number(selectedAddressId)
+        )
+      : null
+
+    if (useSavedAddress && !activeAddress) {
+      toast.error('Please select a valid saved address.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
-      const activeAddress = useSavedAddress
-        ? savedAddresses.find(a => a.id === selectedAddressId)
-        : null
+      const activePhone =
+        activeAddress?.phone || form.phone || ''
 
-      const activePhone = form.phone || activeAddress?.phone || ''
-
+      // Keep the existing address ID so Django can update
+      // the location on that address instead of creating another one.
       const addressPayload = {
-        name: form.name || user?.username || 'Customer',
+        ...(activeAddress ? { id: activeAddress.id } : {}),
+        name: activeAddress?.name || form.name || user?.username || 'Customer',
         phone: activePhone,
         address_line1:
-          form.house_no || form.address_line1 || 'Main Street',
-        address_line2: form.district || '',
-        city: form.city || form.district || '',
-        state: form.state || 'Kerala',
-        pincode: form.pincode || '',
-        is_saved: saveForFuture,
-
-        // Django must support these fields to persist coordinates.
-        latitude: locationCoords?.lat ?? null,
-        longitude: locationCoords?.lng ?? null
+          activeAddress?.address_line1 ||
+          form.house_no ||
+          form.address_line1 ||
+          'Main Street',
+        state: activeAddress?.state || form.state || 'Kerala',
+        is_saved: activeAddress ? true : saveForFuture,
+        latitude: lat,
+        longitude: lng
       }
 
       const payload = {
         payment_method: paymentMethod,
         phone: activePhone,
-        latitude,
-        longitude,
+        latitude: lat,
+        longitude: lng,
         items: cartItems.map(item => ({
           product_id: item.id,
           quantity: item.cartQty || 1
         })),
         coupon_code: coupon?.code || null,
-      
-        ...(useSavedAddress && selectedAddressId
-          ? { address_id: selectedAddressId }
-          : { address_data: addressPayload })
+        address_data: addressPayload
       }
+
+      // Debug: inspect the exact data being sent
+      console.log(
+        'ORDER PAYLOAD:',
+        JSON.stringify(payload, null, 2)
+      )
 
       const res = await placeOrder(payload)
 
@@ -433,23 +509,25 @@ useEffect(() => {
       toast.success('Order placed successfully!')
       navigate(`/order-confirmation/${res.data.id}`)
     } catch (err) {
-      console.error('Place order error:', err.response?.data || err)
+      console.error(
+        'Place order error:',
+        err.response?.data || err
+      )
 
-      const message =
-        err.response?.data?.detail ||
-        err.response?.data?.items ||
-        err.response?.data?.non_field_errors?.[0] ||
-        'Failed to place order. Please review your details and try again.'
+      const errorData = err.response?.data
 
       toast.error(
-        typeof message === 'string'
-          ? message
-          : JSON.stringify(message)
+        typeof errorData === 'string'
+          ? errorData
+          : errorData
+            ? JSON.stringify(errorData)
+            : 'Failed to place order. Please try again.'
       )
     } finally {
       setSubmitting(false)
     }
   }
+
 
   return (
     <div className={styles.checkoutPage}>
@@ -497,9 +575,33 @@ useEffect(() => {
                   <select
                     className={styles.savedSelect}
                     value={selectedAddressId || ''}
-                    onChange={e =>
-                      setSelectedAddressId(Number(e.target.value))
-                    }
+                    onChange={e => {
+                      const id = Number(e.target.value)
+                      const saved = savedAddresses.find(a => a.id === id)
+                    
+                      setSelectedAddressId(id)
+                      setLocationConfirmed(false)
+                      setLocationCoords(null)
+                    
+                      if (!saved) return
+                    
+                      const lat = Number(saved.latitude)
+                      const lng = Number(saved.longitude)
+                    
+                      if (
+                        saved.latitude != null &&
+                        saved.longitude != null &&
+                        saved.latitude !== '' &&
+                        saved.longitude !== '' &&
+                        Number.isFinite(lat) &&
+                        Number.isFinite(lng) &&
+                        lat >= -90 && lat <= 90 &&
+                        lng >= -180 && lng <= 180
+                      ) {
+                        setLocationCoords({ lat, lng })
+                        setLocationConfirmed(true)
+                      }
+                    }}
                   >
                     {savedAddresses.map(address => (
                       <option key={address.id} value={address.id}>
@@ -687,7 +789,11 @@ useEffect(() => {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <span>
-                  {showMap ? 'Satellite map opened' : 'Choose delivery location'}
+                  {locationConfirmed
+                    ? 'Delivery location confirmed ✓'
+                    : showMap
+                      ? 'Satellite map opened'
+                      : 'Choose delivery location'}
                 </span>
               </span>
               <span className={styles.locationChevron}>›</span>
@@ -752,9 +858,18 @@ useEffect(() => {
                 <button
                   type="button"
                   onClick={() => {
+                    if (
+                      locationCoords?.lat == null ||
+                      locationCoords?.lng == null
+                    ) {
+                      toast.error('Please select your delivery location on the map.')
+                      return
+                    }
+                    setLocationConfirmed(true)
                     setShowMap(false)
-                    toast.success('Map location selected.')
+                    toast.success('Delivery location confirmed.')
                   }}
+
                   style={{
                     marginTop: 10,
                     padding: '10px 14px',
@@ -863,7 +978,7 @@ useEffect(() => {
                 <div className={styles.gpayPreviewCard}>
                   <div className={styles.qrCodeBox}>
                     <p style={{ fontSize: 13 }}>
-                      Configure a real UPI QR code before accepting payments.
+                      Online Paymenet is temporarily unavailable. Please select Cash on Delivery to continue with your order. We apologize for the inconvenience. 
                     </p>
                   </div>
                   <div className={styles.gpayLogo}>

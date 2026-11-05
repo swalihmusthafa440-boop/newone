@@ -55,6 +55,7 @@ export const getSavedAddresses = () => api.get('/addresses/')
 export const saveAddress = (data) => api.post('/addresses/', data)
 export const deleteAddress = (id) => api.delete(`/addresses/${id}/`)
 export const placeOrder = (data) => api.post('/orders/', data)
+export const getDeliveryChargePreview = (data) =>api.post('/delivery-charge/preview/', data)
 export const getOrder = (id) => api.get(`/orders/${id}/`)
 export const getOrders = () => api.get('/orders/')
 export const loginUser = (data) => api.post('/auth/login/', data)
@@ -73,6 +74,7 @@ export const createProduct = (data) =>
 export const deleteProduct = (id) => api.delete(`/products/${id}/`)
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/`, { status })
 export const sendChatMessage = (message, context = {}, cart_items = []) => api.post('/chatbot/', { message, context, cart_items })
+
 
 
 
@@ -99,5 +101,34 @@ export const recordCreditPayment = (creditId, data) =>
 /* Customer's own credits */
 export const getMyCredits = () =>
   api.get('/my-credits/')
+
+// Public: Homepage advertisements
+export const getActiveAdvertisements = () =>
+  api.get('/advertisements/active/')
+
+// Admin: Get all advertisements
+export const getAdvertisements = () =>
+  api.get('/admin/advertisements/')
+
+// Admin: Upload advertisement
+export const createAdvertisement = (formData) =>
+  api.post('/admin/advertisements/', formData)
+
+// Admin: Update advertisement
+export const updateAdvertisement = (id, formData) =>
+  api.patch(`/admin/advertisements/${id}/`, formData)
+
+// Admin: Delete advertisement
+export const deleteAdvertisement = (id) =>
+  api.delete(`/admin/advertisements/${id}/`)
+
+/* In-app notifications */
+
+export const getNotifications = () =>
+  api.get('/notifications/')
+
+export const markNotificationRead = (notificationId) =>
+  api.patch(`/notifications/${notificationId}/read/`)
+
 
 export default api

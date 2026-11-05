@@ -9,7 +9,7 @@ import { useToast } from '../context/ToastContext'
 import {
   getSavedAddresses,
   placeOrder,
-  validateCoupon
+  validateCoupon,getDeliveryChargePreview
 } from '../api/api'
 
 import Header from '../components/Header'
@@ -41,6 +41,8 @@ const DEFAULT_LOCATION = {
 
 let googleMapsOptionsConfigured = false
 
+
+
 function normalizeArray(data) {
   if (!data) return []
   if (Array.isArray(data)) return data
@@ -54,6 +56,9 @@ export default function OrderDelivery() {
   const { isLoggedIn, user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
+  const [deliveryCharge, setDeliveryCharge] = useState(null)
+  const [deliveryChargeLoading, setDeliveryChargeLoading] = useState(false)
+  const [deliveryChargeError, setDeliveryChargeError] = useState('')
 
   const [savedAddresses, setSavedAddresses] = useState([])
   const [selectedAddressId, setSelectedAddressId] = useState(null)
@@ -406,7 +411,68 @@ useEffect(() => {
       : Math.min(parseFloat(coupon.discount_value), subtotal)
     : 0
 
-  const grandTotal = Math.max(0, subtotal - discount)
+
+
+  useEffect(() => {
+    if (
+      !locationConfirmed ||
+      !locationCoords ||
+      !cartItems.length
+    ) {
+      setDeliveryCharge(null)
+      return
+    }
+
+    let cancelled = false
+
+    const fetchDeliveryCharge = async () => {
+
+      setDeliveryChargeLoading(true)
+      setDeliveryChargeError('')
+
+      try {
+
+        const response = await getDeliveryChargePreview({
+          latitude: locationCoords.lat,
+          longitude: locationCoords.lng,
+
+          product_ids: cartItems.map(item => item.id)
+        })
+
+        if (!cancelled) {
+          setDeliveryCharge(
+            Number(response.data.delivery_charge)
+          )
+        }
+
+      } catch (error) {
+
+        if (!cancelled) {
+          setDeliveryCharge(null)
+
+          setDeliveryChargeError(
+            error.response?.data?.error ||
+            'Unable to calculate delivery charge.'
+          )
+        }
+
+      } finally {
+
+        if (!cancelled) {
+          setDeliveryChargeLoading(false)
+        }
+
+      }
+    }
+
+    fetchDeliveryCharge()
+
+    return () => {
+      cancelled = true
+    }
+
+  }, [locationConfirmed, locationCoords, cartItems])
+  const grandTotal = Math.max(0,subtotal - discount) + Number(deliveryCharge || 0)
 
     
 
@@ -463,6 +529,17 @@ useEffect(() => {
 
     setSubmitting(true)
 
+    const fullAddressLine = [
+      form.house_no,
+      form.address_line1,
+      form.city,
+      form.district,
+      form.pincode
+    ].filter(Boolean).join(', ')
+
+
+
+
     try {
       const activePhone =
         activeAddress?.phone || form.phone || ''
@@ -474,10 +551,7 @@ useEffect(() => {
         name: activeAddress?.name || form.name || user?.username || 'Customer',
         phone: activePhone,
         address_line1:
-          activeAddress?.address_line1 ||
-          form.house_no ||
-          form.address_line1 ||
-          'Main Street',
+          activeAddress?.address_line1 || fullAddressLine ||'Main Street',
         state: activeAddress?.state || form.state || 'Kerala',
         is_saved: activeAddress ? true : saveForFuture,
         latitude: lat,
@@ -1032,21 +1106,56 @@ useEffect(() => {
           {/* Order total */}
           <div className={styles.orderSummaryCard}>
             <div className={styles.summaryTotalRow}>
-              <span className={styles.summaryTotalLabel}>
-                Total to Pay:
-              </span>
-              <span className={styles.summaryTotalVal}>
-                ₹ {Math.round(grandTotal)}
-              </span>
+              <span>Product Total:</span>
+              <span>₹ {subtotal.toFixed(2)}</span>
             </div>
 
+            <div className={styles.summaryTotalRow}>
+              <span>Discount:</span>
+              <span>- ₹ {discount.toFixed(2)}</span>
+            </div>
+
+            <div className={styles.summaryTotalRow}>
+              <span>Delivery Charge:</span>
+
+              <span>
+                {deliveryChargeLoading
+                  ? 'Calculating...'
+                  : deliveryCharge !== null
+                    ? deliveryCharge === 0
+                      ? 'FREE'
+                      : `₹ ${deliveryCharge.toFixed(2)}`
+                    : '--'}
+              </span>
+            </div>
+                
+            {deliveryChargeError && (
+              <p style={{ color: 'red' }}>
+                {deliveryChargeError}
+              </p>
+            )}
+
+            <div className={styles.summaryTotalRow}>
+              <span>Total to Pay:</span>
+          
+              <span>
+                ₹ {grandTotal.toFixed(2)}
+              </span>
+            </div>
+          
             <button
               type="submit"
               className={styles.placeOrderBtn}
-              disabled={submitting}
+              disabled={
+                submitting ||
+                deliveryChargeLoading ||
+                deliveryCharge === null ||
+                !!deliveryChargeError
+              }
             >
               {submitting ? 'Placing Order...' : 'Place Order'}
             </button>
+            
           </div>
         </form>
       </main>

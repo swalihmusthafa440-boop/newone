@@ -7,6 +7,10 @@ from .models import Product, Category, Review
 from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
 from rest_framework.exceptions import PermissionDenied
 from auth_api.store_permissions import get_owned_store
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Advertisement
+from .serializers import AdvertisementSerializer
+from django.db import models
 
 
 class ProductListView(generics.ListCreateAPIView):
@@ -159,3 +163,37 @@ def admin_stats(request):
         "out_of_stock": out_of_stock,
         "status_breakdown": status_breakdown,
     })
+
+
+class ActiveAdvertisementListView(generics.ListAPIView):
+    serializer_class = AdvertisementSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+
+        return Advertisement.objects.filter(
+            is_active=True
+        ).filter(
+            models.Q(start_date__isnull=True) |
+            models.Q(start_date__lte=now)
+        ).filter(
+            models.Q(end_date__isnull=True) |
+            models.Q(end_date__gte=now)
+        ).order_by('display_order', '-created_at')
+
+
+class AdvertisementAdminListCreateView(generics.ListCreateAPIView):
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+
+class AdvertisementAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]

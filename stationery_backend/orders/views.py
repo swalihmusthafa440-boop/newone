@@ -9,8 +9,87 @@ from .serializers import AddressSerializer, OrderCreateSerializer, OrderDetailSe
 from django.db import transaction
 from whatsapp.services import send_order_notification
 from auth_api.store_permissions import get_owned_store
+from .models import Notification
+from rest_framework.views import APIView
+from .models import PushSubscription
+from .push import send_push_notification
+from products.models import Product
+
+from .serializers import (
+    calculate_distance_meters,
+    calculate_delivery_charge
+)
 
 logger = logging.getLogger(__name__)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def delivery_charge_preview(request):
+    latitude = request.data.get('latitude')
+    longitude = request.data.get('longitude')
+    product_ids = request.data.get('product_ids')
+
+    if latitude is None or longitude is None:
+        return Response(
+            {'error': 'Customer location is required.'},
+            status=400
+        )
+
+    if not isinstance(product_ids, list) or not product_ids:
+        return Response(
+            {'error': 'Product IDs are required.'},
+            status=400
+        )
+
+    try:
+        products = Product.objects.filter(
+            id__in=product_ids,
+            is_active=True
+        ).select_related('store')
+
+        if products.count() != len(set(product_ids)):
+            return Response(
+                {'error': 'One or more products are unavailable.'},
+                status=400
+            )
+
+        stores = {p.store_id for p in products}
+
+        if None in stores or len(stores) != 1:
+            return Response(
+                {'error': 'Products must belong to one store.'},
+                status=400
+            )
+
+        store = products[0].store
+
+        if store.latitude is None or store.longitude is None:
+            return Response(
+                {'error': 'Store location is not configured.'},
+                status=400
+            )
+
+        distance = calculate_distance_meters(
+            store.latitude,
+            store.longitude,
+            latitude,
+            longitude
+        )
+
+        charge = calculate_delivery_charge(distance)
+
+        return Response({
+            'delivery_charge': str(charge)
+        })
+
+    except (ValueError, TypeError):
+        return Response(
+            {'error': 'Invalid location coordinates.'},
+            status=400
+        )
+
 
 
 class AddressListCreateView(generics.ListCreateAPIView):
@@ -22,6 +101,30 @@ class AddressListCreateView(generics.ListCreateAPIView):
             user=self.request.user,
             is_saved=True
         ).order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        unique_addresses = []
+        seen = set()
+
+        for address in serializer.data:
+            key = (
+                (address.get('address_line1') or '').strip().lower(),
+                (address.get('state') or '').strip().lower(),
+                round(float(address['latitude']), 4)
+                    if address.get('latitude') is not None else None,
+                round(float(address['longitude']), 4)
+                    if address.get('longitude') is not None else None,
+            )
+
+            if key not in seen:
+                seen.add(key)
+                unique_addresses.append(address)
+
+        return Response(unique_addresses)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -158,11 +261,38 @@ class OrderDetailView(generics.RetrieveUpdateAPIView):
         if not new_status or new_status not in dict(Order.STATUS_CHOICES):
             return Response({'error': 'Invalid status choice.'}, status=400)
 
+
+
         # Admin / staff can update to any status
         if request.user.is_staff:
+            old_status = instance.status
+
             instance.status = new_status
             instance.save()
+
+            # Notify customer only when order becomes confirmed
+            if (
+                old_status != 'confirmed'
+                and new_status == 'confirmed'
+                and instance.user
+            ):
+                Notification.objects.create(
+                    user=instance.user,
+                    order=instance,
+                    title='Order Confirmed',
+                    message=f'Your #{instance.id} order is confirmed.'
+                )
+
+                send_push_notification(
+                    user=instance.user,
+                    title='Order Confirmed',
+                    body=f'Your #{instance.id} order has been confirmed.',
+                    url='/orders'
+                )
+
             return Response(OrderDetailSerializer(instance).data)
+
+
 
         # Customer can cancel their own pending order
         if instance.user == request.user and instance.status == 'pending' and new_status == 'cancelled':
@@ -218,3 +348,82 @@ def validate_coupon(request):
             {'error': 'Invalid or expired coupon code'},
             status=400
         )
+    
+    
+class NotificationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifications = Notification.objects.filter(
+            user=request.user
+        )
+
+        data = [
+            {
+                'id': n.id,
+                'order_id': n.order_id,
+                'title': n.title,
+                'message': n.message,
+                'is_read': n.is_read,
+                'created_at': n.created_at,
+            }
+            for n in notifications
+        ]
+
+        unread_count = notifications.filter(is_read=False).count()
+
+        return Response({
+            'notifications': data,
+            'unread_count': unread_count
+        })
+
+
+class NotificationReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            notification = Notification.objects.get(
+                pk=pk,
+                user=request.user
+            )
+        except Notification.DoesNotExist:
+            return Response(
+                {'error': 'Notification not found'},
+                status=404
+            )
+
+        notification.is_read = True
+        notification.save(update_fields=['is_read'])
+
+        return Response({'message': 'Notification marked as read'})
+
+
+class PushSubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        subscription = request.data
+
+        endpoint = subscription.get('endpoint')
+        keys = subscription.get('keys', {})
+
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+
+        if not endpoint or not p256dh or not auth:
+            return Response(
+                {'error': 'Invalid subscription data'},
+                status=400
+            )
+
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={
+                'user': request.user,
+                'p256dh': p256dh,
+                'auth': auth,
+            }
+        )
+
+        return Response({'message': 'Subscription saved successfully'})

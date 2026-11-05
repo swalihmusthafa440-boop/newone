@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, Address, Coupon, DeliveryCashHandover, CustomerCredit,CustomerCreditPayment,CustomerCreditPermission
+from .models import Order, OrderItem, Address, Coupon, DeliveryCashHandover, CustomerCredit,CustomerCreditPayment,CustomerCreditPermission,PushSubscription
 
 
 class OrderItemInline(admin.TabularInline):
@@ -59,3 +59,9 @@ class CustomerCreditPermissionAdmin(admin.ModelAdmin):
         'store__name',
         'customer__username',
     )
+
+@admin.register(PushSubscription)
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'endpoint', 'created_at')
+    search_fields = ('user__username',)
+    readonly_fields = ('endpoint', 'p256dh', 'auth', 'created_at')

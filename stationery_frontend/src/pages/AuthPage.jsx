@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext'
 import styles from './AuthPage.module.css'
 import {  useLocation } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
+import { enablePushNotifications } from '../utils/pushNotifications'
 
 export default function AuthPage() {
   const location = useLocation()
@@ -16,6 +17,7 @@ export default function AuthPage() {
   const { login, register,googleLogin } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
+  const [showNotificationOption, setShowNotificationOption] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -38,36 +40,56 @@ export default function AuthPage() {
     try {
       await googleLogin(credentialResponse.credential)
       toast.success('Welcome to StatioMart!')
-      navigate(location.state?.from || '/', { replace: true })
+      setShowNotificationOption(true)
     } catch (err) {
       toast.error(
         err.response?.data?.detail || 'Google login failed. Please try again.'
       )
     }
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
     const errs = validate()
-    if (Object.keys(errs).length > 0) { setErrors(errs); return }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      return
+    }
+
     setLoading(true)
+
     try {
       if (mode === 'login') {
         await login(form.username, form.password)
         toast.success('Welcome back! 🎉')
+        setShowNotificationOption(true)
       } else {
-        await register({ username: form.username, email: form.email, password: form.password, first_name: form.first_name, last_name: form.last_name })
+        await register({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+          first_name: form.first_name,
+          last_name: form.last_name
+        })
+
         toast.success('Account created successfully! 🎉')
+        setShowNotificationOption(true)
       }
-      navigate(location.state?.from || '/')
     } catch (err) {
       const data = err.response?.data
-      const msg = data?.detail || data?.username?.[0] || data?.email?.[0] || 'Something went wrong. Please try again.'
+      const msg =
+        data?.detail ||
+        data?.username?.[0] ||
+        data?.email?.[0] ||
+        'Something went wrong. Please try again.'
+
       toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
-
+  
   return (
     <div className={styles.page}>
       <div className={styles.container}>
@@ -204,6 +226,38 @@ export default function AuthPage() {
                   )}
                 </button>
               </form>
+
+              {showNotificationOption && (
+                <div className={styles.wordnotification}>
+                  <p>Enable notifications to receive order updates.</p>
+
+                  <button className={styles.enable_notification}
+                    type="button"
+                    onClick={async () => {
+                      const enabled = await enablePushNotifications()
+                    
+                      if (enabled) {
+                        toast.success('Notifications enabled!')
+                      } else {
+                        toast.warning('Notifications were not enabled.')
+                      }
+                    
+                      navigate(location.state?.from || '/', { replace: true })
+                    }}
+                  >
+                    Enable Notifications
+                  </button>
+                  
+                  <button className={styles.notification_skip}
+                    type="button"
+                    onClick={() => navigate(location.state?.from || '/', { replace: true })}
+                  >
+                    Skip
+                  </button>
+                </div>
+              )}
+
+
               <div style={{ textAlign: 'center', marginTop: '15px'}}>
                 <p style={{fontSize:"14px", color:"grey"}}>or sign in with</p>
                 

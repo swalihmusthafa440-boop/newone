@@ -43,7 +43,13 @@ async function getAllProducts() {
     }
 
     allProducts = [...allProducts, ...(data.results || [])]
-    nextUrl = data.next
+
+    if (data.next) {
+      const next = new URL(data.next, window.location.origin)
+      nextUrl = `products/${next.search}`
+    } else {
+      nextUrl = null
+    }
   }
 
   return allProducts
@@ -102,8 +108,16 @@ export default function AdminDashboard() {
       setStats(sRes.data)
       setOrders(normalizeArray(oRes?.data))
       setProducts(pRes)
-    } catch {
-      toast.error('Failed to load dashboard data')
+    } catch (error) {
+      console.error('Admin Dashboard Error:', error)
+      console.error('API Response:', error.response?.data)
+      console.error('API Status:', error.response?.status)
+        
+      toast.error(
+        error.response?.data?.detail ||
+        error.message ||
+        'Failed to load dashboard data'
+      )
       setOrders([])
       setProducts([])
     } finally {

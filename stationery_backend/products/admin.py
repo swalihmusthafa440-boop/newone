@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Category, Review
+from .models import Product, Category, Review, Advertisement
 
 
 @admin.register(Category)
@@ -25,3 +25,17 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ['rating']
     search_fields = ['product__name', 'user__username']
     readonly_fields = ['created_at']
+
+@admin.register(Advertisement)
+class AdvertisementAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'title',
+        'is_active',
+        'display_order',
+        'start_date',
+        'end_date',
+    )
+    list_editable = ('is_active', 'display_order')
+    search_fields = ('title',)
+    list_filter = ('is_active',)

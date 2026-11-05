@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getProducts, getCategories } from '../api/api'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { getProducts, getCategories, getActiveAdvertisements } from '../api/api'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import ProductCard from '../components/ProductCard'
@@ -13,10 +13,9 @@ function normalizeArray(data) {
   return []
 }
 
-// Category icons for reference-style icon pills
 const CATEGORY_ICONS = {
   all: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="7" height="7" />
       <rect x="14" y="3" width="7" height="7" />
       <rect x="14" y="14" width="7" height="7" />
@@ -24,13 +23,13 @@ const CATEGORY_ICONS = {
     </svg>
   ),
   notebooks: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
   ),
   pens: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 19l7-7 3 3-7 7-3-3z" />
       <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
       <path d="M2 2l7.586 7.586" />
@@ -38,17 +37,17 @@ const CATEGORY_ICONS = {
     </svg>
   ),
   office: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
   ),
   art: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
-      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
-      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
-      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="13.5" cy="6.5" r=".5" />
+      <circle cx="17.5" cy="10.5" r=".5" />
+      <circle cx="8.5" cy="7.5" r=".5" />
+      <circle cx="6.5" cy="12.5" r=".5" />
       <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" />
     </svg>
   ),
@@ -61,16 +60,29 @@ export default function ProductSelection() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
-  const [bannerSlide, setBannerSlide] = useState(0)
+
+  const [advertisements, setAdvertisements] = useState([])
+  const [adIndex, setAdIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartX = useRef(null)
+
+
+
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
-      const [prodRes, catRes] = await Promise.all([getProducts(), getCategories()])
+
+      const [prodRes, catRes] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ])
+
       setProducts(normalizeArray(prodRes?.data))
       setCategories(normalizeArray(catRes?.data))
-    } catch {
+    } catch (err) {
+      console.error(err)
       setError('Unable to load products. Please ensure the backend server is running.')
       setProducts([])
       setCategories([])
@@ -79,176 +91,223 @@ export default function ProductSelection() {
     }
   }, [])
 
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 600px)')
+
+    const handleScreenChange = (event) => {
+      setIsMobile(event.matches)
+      setAdIndex(0)
+    }
+
+    setIsMobile(mediaQuery.matches)
+
+    mediaQuery.addEventListener('change', handleScreenChange)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleScreenChange)
+    }
+  }, [])
+
+
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
+  useEffect(() => {
+    const fetchAdvertisements = async () => {
+      try {
+        const response = await getActiveAdvertisements()
+        setAdvertisements(normalizeArray(response?.data))
+        setAdIndex(0)
+      } catch (err) {
+        console.error('Advertisement loading failed:', err)
+        setAdvertisements([])
+      }
+    }
+
+    fetchAdvertisements()
+  }, [])
+
   const handleCategoryClick = useCallback(async (slug) => {
     setActiveCategory(slug)
     setSearch('')
+
     try {
       setLoading(true)
-      const res = await getProducts(slug ? { category: slug } : {})
-      setProducts(normalizeArray(res?.data))
-    } catch {
+      setError('')
+
+      const response = await getProducts(slug ? { category: slug } : {})
+      setProducts(normalizeArray(response?.data))
+    } catch (err) {
+      console.error(err)
       setProducts([])
+      setError('Unable to load products for this category.')
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault()
-    // Filters applied via processedProducts useMemo
+  const adsPerView = isMobile ? 1 : 2
+  
+  const maxAdIndex = Math.max(
+    0,
+    advertisements.length - adsPerView
+  )
+  
+  const showNextAds = () => {
+    setAdIndex((current) =>
+      Math.min(maxAdIndex, current + adsPerView)
+    )
+  }
+  
+  const showPreviousAds = () => {
+    setAdIndex((current) =>
+      Math.max(0, current - adsPerView)
+    )
+  }
+
+  const handleAdTouchStart = (event) => {
+    touchStartX.current = event.touches[0].clientX
+  }
+
+  const handleAdTouchEnd = (event) => {
+    if (touchStartX.current === null) return
+
+    const difference = touchStartX.current - event.changedTouches[0].clientX
+
+    if (Math.abs(difference) > 40) {
+      if (difference > 0) showNextAds()
+      else showPreviousAds()
+    }
+
+    touchStartX.current = null
   }
 
   const processedProducts = useMemo(() => {
     let list = normalizeArray(products)
+
     if (search.trim()) {
-      const q = search.toLowerCase().trim()
-      list = list.filter(
-        (p) =>
-          (p.name && p.name.toLowerCase().includes(q)) ||
-          (p.description && p.description.toLowerCase().includes(q)) ||
-          (p.category_name && p.category_name.toLowerCase().includes(q))
+      const query = search.toLowerCase().trim()
+
+      list = list.filter((product) =>
+        (product.name && product.name.toLowerCase().includes(query)) ||
+        (product.description && product.description.toLowerCase().includes(query)) ||
+        (product.category_name && product.category_name.toLowerCase().includes(query))
       )
     }
+
     return list
   }, [products, search])
 
   const safeCategories = normalizeArray(categories)
 
+  useEffect(() => {
+    if (advertisements.length <= adsPerView) return;
+    
+    const interval = setInterval(() => {
+      setAdIndex((current) =>
+        current >= maxAdIndex ? 0 : Math.min(current + adsPerView, maxAdIndex)
+      );
+    }, 3000);
+  
+    return () => clearInterval(interval);
+  }, [advertisements.length, adsPerView, maxAdIndex]);
+
   return (
     <div className={styles.page}>
       <Header />
 
-      {/* Main Container */}
       <main className={styles.main}>
-        {/* Search Bar matching Reference Image Row 2 */}
+        {/* Search */}
         <section className={styles.searchSection}>
-          <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+          <form className={styles.searchForm} onSubmit={(e) => e.preventDefault()}>
             <div className={styles.searchInputWrapper}>
-              <svg className={styles.searchLeadingIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
               <input
                 className={styles.searchInput}
                 type="text"
                 placeholder="Search for stationery, office supplies..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search stationery"
               />
+
               {search && (
                 <button
                   type="button"
                   className={styles.clearSearchBtn}
                   onClick={() => setSearch('')}
-                  aria-label="Clear search"
                 >
                   ✕
                 </button>
               )}
             </div>
 
-            {/* Bright-Blue Square Search Button with Magnifying Glass */}
-            <button type="submit" className={styles.searchBtn} aria-label="Search">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+            <button type="submit" className={styles.searchBtn}>
+              🔍
             </button>
           </form>
         </section>
 
-        {/* Promotional Carousel Banner matching Reference Image */}
-        {!search && (
+        {/* Advertisement carousel */}
+        {!search && advertisements.length > 0 && (
           <section className={styles.bannerSection}>
-            <div className={styles.bannerCard}>
-              {/* Left arrow */}
-              <button
-                className={styles.bannerArrowLeft}
-                onClick={() => setBannerSlide(prev => (prev === 0 ? 1 : 0))}
-                aria-label="Previous promo"
+            <div
+              className={styles.adViewport}
+              onTouchStart={handleAdTouchStart}
+              onTouchEnd={handleAdTouchEnd}
+            >
+              <div
+                className={styles.adTrack}
+                style={{
+                  transform: `translateX(-${adIndex * (isMobile ? 100 : 50)}%)`
+                }}
               >
-                ‹
-              </button>
-
-              <div className={styles.bannerContent}>
-                <h2 className={styles.bannerTitle}>
-                  Your <br />
-                  <strong>Stationery Partner</strong>
-                </h2>
-                <p className={styles.bannerSubtitle}>
-                  {bannerSlide === 0
-                    ? 'Great Deals on Quality Products'
-                    : 'Premium Pens, Notebooks & Office Supplies'}
-                </p>
-                <button
-                  className={styles.shopNowBtn}
-                  onClick={() => {
-                    const el = document.getElementById('catalog-grid')
-                    el?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                >
-                  Shop Now →
-                </button>
+                {advertisements.map((ad) => (
+                  <div className={styles.adSlide} key={ad.id}>
+                    <img
+                      className={styles.adImage}
+                      src={`/media/${ad.image.split('/media/')[1]}`}
+                      alt={ad.title || 'Advertisement'}
+                      draggable="false"
+                    />
+                  </div>
+                ))}
               </div>
-
-              {/* Decorative Visual Illustration */}
-              <div className={styles.bannerIllustration}>
-                <div className={styles.pencilCupVisual}>
-                  <span className={styles.cupEmoji}>✏️</span>
-                  <span className={styles.booksEmoji}>📚</span>
-                </div>
-              </div>
-
-              {/* Right arrow */}
-              <button
-                className={styles.bannerArrowRight}
-                onClick={() => setBannerSlide(prev => (prev === 0 ? 1 : 0))}
-                aria-label="Next promo"
-              >
-                ›
-              </button>
             </div>
+
           </section>
         )}
 
-        {/* Categories Bar matching Reference Horizontal Row */}
+        {/* Categories */}
         <section className={styles.categoriesBar}>
           <div className={styles.categoriesScroll}>
-            {/* "All" button */}
             <button
               className={`${styles.catButton} ${activeCategory === '' ? styles.catButtonActive : ''}`}
               onClick={() => handleCategoryClick('')}
             >
-              <div className={styles.catIconWrap}>
-                {CATEGORY_ICONS.all}
-              </div>
+              <div className={styles.catIconWrap}>{CATEGORY_ICONS.all}</div>
               <span className={styles.catName}>All</span>
             </button>
 
-            {/* Dynamic categories from DB */}
             {safeCategories.map((cat) => {
-              const slugLower = (cat.slug || '').toLowerCase()
+              const slug = (cat.slug || '').toLowerCase()
               let icon = CATEGORY_ICONS.office
-              if (slugLower.includes('notebook') || slugLower.includes('paper')) icon = CATEGORY_ICONS.notebooks
-              else if (slugLower.includes('pen') || slugLower.includes('pencil')) icon = CATEGORY_ICONS.pens
-              else if (slugLower.includes('art') || slugLower.includes('craft')) icon = CATEGORY_ICONS.art
 
-              const isCatActive = activeCategory === cat.slug
+              if (slug.includes('notebook') || slug.includes('paper')) {
+                icon = CATEGORY_ICONS.notebooks
+              } else if (slug.includes('pen') || slug.includes('pencil')) {
+                icon = CATEGORY_ICONS.pens
+              } else if (slug.includes('art') || slug.includes('craft')) {
+                icon = CATEGORY_ICONS.art
+              }
 
               return (
                 <button
                   key={cat.id}
-                  className={`${styles.catButton} ${isCatActive ? styles.catButtonActive : ''}`}
+                  className={`${styles.catButton} ${activeCategory === cat.slug ? styles.catButtonActive : ''}`}
                   onClick={() => handleCategoryClick(cat.slug)}
                 >
-                  <div className={styles.catIconWrap}>
-                    {icon}
-                  </div>
+                  <div className={styles.catIconWrap}>{icon}</div>
                   <span className={styles.catName}>{cat.name}</span>
                 </button>
               )
@@ -256,19 +315,21 @@ export default function ProductSelection() {
           </div>
         </section>
 
-        {/* Catalog Section */}
+        {/* Products */}
         <section className={styles.catalogSection} id="catalog-grid">
           {error && (
             <div className={styles.errorBox}>
               <p>{error}</p>
-              <button onClick={fetchData} className={styles.retryBtn}>Retry</button>
+              <button onClick={fetchData} className={styles.retryBtn}>
+                Retry
+              </button>
             </div>
           )}
 
           {loading && (
             <div className={styles.productsGrid}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={styles.skeletonCard} />
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className={styles.skeletonCard} />
               ))}
             </div>
           )}
@@ -282,7 +343,10 @@ export default function ProductSelection() {
                   <p>Try searching with another keyword or explore all categories.</p>
                   <button
                     className={styles.resetBtn}
-                    onClick={() => { setSearch(''); handleCategoryClick('') }}
+                    onClick={() => {
+                      setSearch('')
+                      handleCategoryClick('')
+                    }}
                   >
                     View All Products
                   </button>

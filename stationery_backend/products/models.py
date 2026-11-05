@@ -64,3 +64,30 @@ class Product(models.Model):
         if not reviews:
             return None
         return round(sum(r.rating for r in reviews) / len(reviews), 1)
+
+from django.utils import timezone
+
+
+class Advertisement(models.Model):
+    title = models.CharField(max_length=150, blank=True)
+    image = models.ImageField(upload_to='advertisements/')
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['display_order', '-created_at']
+
+    def __str__(self):
+        return self.title or f"Advertisement {self.id}"
+
+    @property
+    def is_currently_active(self):
+        now = timezone.now()
+        return (
+            self.is_active
+            and (self.start_date is None or self.start_date <= now)
+            and (self.end_date is None or self.end_date >= now)
+        )

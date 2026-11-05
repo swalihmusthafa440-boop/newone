@@ -12,6 +12,9 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.db import transaction
 from .models import UserRole
+from decimal import Decimal, InvalidOperation
+from .models import Store
+from .store_permissions import get_owned_store
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -253,4 +256,66 @@ def manage_user_roles(request, user_id=None):
         'detail': 'User role updated successfully.',
         'user_id': target_user.id,
         'role': role_info.role,
+    })
+
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def store_location_view(request):
+
+    try:
+        store = get_owned_store(request.user)
+
+        if store is None:
+            return Response(
+                {'detail': 'No store selected for this account.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    except Exception as e:
+        return Response(
+            {'detail': str(e)},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    if request.method == 'GET':
+        return Response({
+            'name': store.name,
+            'admin_whatsapp_number': store.admin_whatsapp_number,
+            'latitude': store.latitude,
+            'longitude': store.longitude,
+        })
+
+    latitude = request.data.get('latitude', store.latitude)
+    longitude = request.data.get('longitude', store.longitude)
+
+    try:
+        latitude = Decimal(str(latitude))
+        longitude = Decimal(str(longitude))
+    except (InvalidOperation, TypeError, ValueError):
+        return Response(
+            {'detail': 'Enter valid latitude and longitude.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not (-90 <= latitude <= 90):
+        return Response(
+            {'latitude': 'Latitude must be between -90 and 90.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not (-180 <= longitude <= 180):
+        return Response(
+            {'longitude': 'Longitude must be between -180 and 180.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    store.latitude = latitude
+    store.longitude = longitude
+    store.save(update_fields=['latitude', 'longitude'])
+
+    return Response({
+        'detail': 'Store location updated successfully.',
+        'latitude': store.latitude,
+        'longitude': store.longitude,
     })

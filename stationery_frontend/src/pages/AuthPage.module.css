@@ -148,6 +148,53 @@
   display: inline-block;
 }
 
+.wordnotification{
+  text-align: center;
+  margin-top: 20px;
+  
+  font-size: 16px;
+  font-weight: 700;
+}
+[data-theme="dark"].wordnotification{
+  color: white;
+}
+
+.enable_notification{
+  background: none;
+  font-weight: 700;
+  margin-right: 70px;
+  font-size: 16px;
+  color:white;
+  background-color: #0070F3;
+  border:1px solid rgb(61, 58, 58);
+  width: 14rem;
+  height: 2.4rem;
+  border-radius: 6px;
+}
+.enable_notification:hover{
+  color: white;
+  background-color:  #095dbd;
+}
+
+
+
+.notification_skip{
+  border-radius: 6px;
+  background: transparent;
+  font-weight: 700;
+  border:1px solid rgb(73, 68, 68);
+  width: 4rem;
+  height: 2.4rem;
+  font-size: 16px;
+  color:white;
+  background-color: #0070F3;
+  margin-top: 10px; ;
+}
+.notification_skip:hover{
+  color: white;
+  background-color:  #095dbd;
+}
+
 .divider {
   display: flex;
   align-items: center;

@@ -24,4 +24,8 @@ urlpatterns = [
 
     # Customer credit page
     path('my-credits/', credit_views.MyCreditsView.as_view(), name='my-credits'),
+    path('notifications/',views.NotificationListView.as_view(),name='notifications'),
+    path('notifications/<int:pk>/read/',views.NotificationReadView.as_view(),name='notification-read'),
+    path('push/subscribe/',views.PushSubscriptionView.as_view(),name='push-subscribe'),
+    path('delivery-charge/preview/',views.delivery_charge_preview,name='delivery-charge-preview'),
 ]

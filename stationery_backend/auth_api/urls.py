@@ -10,9 +10,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('google/', views.google_login_view, name='google_login'),
     path('users/', views.manage_user_roles, name='manage_users'),
-    path(
-        'users/<int:user_id>/role/',
-        views.manage_user_roles,
-        name='manage_user_role'
-    ),
+    path('users/<int:user_id>/role/',views.manage_user_roles,name='manage_user_role'),
+    path('store/location/',views.store_location_view,name='store_location'),
 ]

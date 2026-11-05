@@ -4,6 +4,8 @@ import { useCart } from '../context/CartContext'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import styles from './Header.module.css'
+import { enablePushNotifications } from '../utils/pushNotifications'
+import { getNotifications, markNotificationRead } from '../api/api'
 
 export default function Header() {
   const { totalItems } = useCart()
@@ -29,6 +31,57 @@ export default function Header() {
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+  
+  const loadNotifications = async () => {
+    if (!isLoggedIn) {
+      setNotifications([])
+      setHasUnreadNotifications(false)
+      return
+    }
+  
+    try {
+      const response = await getNotifications()
+      setNotifications(response.data.notifications || [])
+      setHasUnreadNotifications((response.data.unread_count || 0) > 0)
+    } catch (error) {
+      console.error('Could not load notifications:', error)
+    }
+  }
+  
+  const handleNotificationClick = async (notification) => {
+    try {
+      if (!notification.is_read) {
+        await markNotificationRead(notification.id)
+      
+        setNotifications(current =>
+          current.map(item =>
+            item.id === notification.id
+              ? { ...item, is_read: true }
+              : item
+          )
+        )
+      
+        setHasUnreadNotifications(
+          notifications.some(
+            item => item.id !== notification.id && !item.is_read
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Could not mark notification as read:', error)
+    }
+  
+    setNotificationsOpen(false)
+  
+    if (notification.order_id) {
+      navigate('/orders')
+    }
+  }
+
+
   const isHome = location.pathname === '/'
   const isCart = location.pathname === '/cart'
   const isCheckout = location.pathname === '/checkout'
@@ -41,6 +94,22 @@ export default function Header() {
     setDrawerOpen(false)
   }, [location.pathname])
 
+
+  useEffect(() => {
+    loadNotifications()
+
+    if (!isLoggedIn) return undefined
+
+    const intervalId = window.setInterval(
+      loadNotifications,
+      30000
+    )
+
+    return () => window.clearInterval(intervalId)
+  }, [isLoggedIn])
+
+
+
   const handleLogout = () => {
     logout()
     setDrawerOpen(false)
@@ -49,6 +118,30 @@ export default function Header() {
 
   // Subpage header mode for Cart, Checkout, OrderConfirmation, ProductDetail, Orders
   const isSubpage = !isHome && !isAuth
+
+  const [pushMessage, setPushMessage] = useState('')
+  const [pushLoading, setPushLoading] = useState(false)
+
+  const handleEnablePush = async () => {
+    if (!isLoggedIn) {
+      navigate('/auth')
+      return
+    }
+
+    setPushLoading(true)
+
+    const result = await enablePushNotifications();
+
+    if (result.success) {
+      toast.success('Notifications enabled!');
+    } else {
+      toast.warning(result.message);
+    }
+
+    navigate(location.state?.from || '/', { replace: true });
+
+  }
+
 
   return (
     <>
@@ -143,6 +236,88 @@ export default function Header() {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </button>
+
+                {isLoggedIn && (
+                  <div className={styles.notificationWrap}>
+                    <button
+                      className={styles.iconBtn}
+                      onClick={() => {
+                        const willOpen = !notificationsOpen
+                        setNotificationsOpen(willOpen)
+                      
+                        if (willOpen) {
+                          loadNotifications()
+                        }
+                      }}
+                      title="Notifications"
+                      aria-label="Notifications"
+                    >
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                        <path d="M10 21h4" />
+                      </svg>
+                    
+                      {hasUnreadNotifications && (
+                        <span className={styles.notificationDot} />
+                      )}
+                    </button>
+                    
+                    {notificationsOpen && (
+                      <div className={styles.notificationPanel}>
+                        <div className={styles.notificationPanelHeader}>
+                          Notifications
+                        </div>
+                    
+                        {notifications.length === 0 ? (
+                          <div className={styles.emptyNotifications}>
+                            No notifications yet
+                          </div>
+                        ) : (
+                          <div className={styles.notificationList}>
+                            {notifications.map(notification => (
+                              <button
+                                key={notification.id}
+                                className={`${styles.notificationItem} ${
+                                  !notification.is_read
+                                    ? styles.unreadNotification
+                                    : ''
+                                }`}
+                                onClick={() =>
+                                  handleNotificationClick(notification)
+                                }
+                              >
+                                <span className={styles.notificationTitle}>
+                                  {notification.title}
+                                </span>
+                              
+                                <span className={styles.notificationMessage}>
+                                  {notification.message}
+                                </span>
+                              
+                                {notification.created_at && (
+                                  <span className={styles.notificationTime}>
+                                    {new Date(
+                                      notification.created_at
+                                    ).toLocaleString()}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Cart Icon with Red Notification Badge */}
                 <button

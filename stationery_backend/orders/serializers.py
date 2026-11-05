@@ -2,6 +2,50 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Address, Order, OrderItem, Coupon
 from products.models import Product
+from decimal import Decimal
+from math import radians, sin, cos, asin, sqrt, ceil
+
+
+def calculate_distance_meters(lat1, lon1, lat2, lon2):
+    """Calculate distance between shop and customer."""
+
+    earth_radius_meters = 6371000
+
+    lat1, lon1, lat2, lon2 = map(
+        radians,
+        [float(lat1), float(lon1), float(lat2), float(lon2)]
+    )
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = (
+        sin(dlat / 2) ** 2
+        + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    )
+
+    distance = 2 * earth_radius_meters * asin(sqrt(a))
+
+    return ceil(distance)
+
+
+def calculate_delivery_charge(distance_meters):
+
+    if distance_meters <= 350:
+        return Decimal('0.00')
+
+    elif distance_meters <= 700:
+        return Decimal('2.00')
+
+    elif distance_meters <= 1000:
+        return Decimal('4.00')
+
+    else:
+        extra_blocks = ceil((distance_meters - 1000) / 300)
+
+        return Decimal(
+            str(4 + (extra_blocks * 2))
+        ).quantize(Decimal('0.01'))
 
 
 class CouponSerializer(serializers.ModelSerializer):
@@ -40,9 +84,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'address_data', 'address_id', 'payment_method', 'notes',
             'items', 'total_amount', 'status', 'created_at', 'coupon_code',
-            'discount_amount', 'phone'
+            'discount_amount', 'phone','delivery_charge','delivery_distance_meters','notification_email',
         ]
-        read_only_fields = ['id', 'status', 'created_at', 'total_amount', 'discount_amount']
+        read_only_fields = ['id', 'status', 'created_at', 'total_amount', 'discount_amount','delivery_charge','delivery_distance_meters',]
 
     def validate_items(self, value):
         if not value or not isinstance(value, list) or len(value) == 0:
@@ -97,8 +141,44 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
                 address.save()
             else:
-                address = Address.objects.create(**address_data)
-
+                if user and address_data.get('is_saved', False):
+                    from django.db.models import Q
+            
+                    address_line = (address_data.get('address_line1') or '').strip()
+                    state = (address_data.get('state') or '').strip()
+            
+                    existing_addresses = Address.objects.filter(
+                        user=user,
+                        is_saved=True,
+                        address_line1__iexact=address_line,
+                        state__iexact=state
+                    ).order_by('-created_at')
+            
+                    # Same address and approximately same map location
+                    address = None
+            
+                    new_lat = address_data.get('latitude')
+                    new_lng = address_data.get('longitude')
+            
+                    for old_address in existing_addresses:
+                        same_location = (
+                            new_lat is not None
+                            and new_lng is not None
+                            and old_address.latitude is not None
+                            and old_address.longitude is not None
+                            and round(float(old_address.latitude), 4) == round(float(new_lat), 4)
+                            and round(float(old_address.longitude), 4) == round(float(new_lng), 4)
+                        )
+            
+                        if same_location:
+                            address = old_address
+                            break
+                        
+                    if address is None:
+                        address = Address.objects.create(**address_data)
+                else:
+                    address = Address.objects.create(**address_data)
+                
             validated_data['phone'] = (
                 validated_data.get('phone') or address.phone
             )
@@ -217,15 +297,47 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                     subtotal
                 )
 
-
         final_total = max(0.0, round(subtotal - discount_amount, 2))
+
+        # Check shop and customer locations
+
+        if (
+            store.latitude is None
+            or store.longitude is None
+            or address.latitude is None
+            or address.longitude is None
+        ):
+            raise serializers.ValidationError({
+                'delivery_location': (
+                    'Shop location and customer delivery location '
+                    'are required.'
+                )
+            })
+        delivery_distance_meters = calculate_distance_meters(
+            store.latitude,
+            store.longitude,
+            address.latitude,
+            address.longitude
+        )
+
+        delivery_charge = calculate_delivery_charge(
+            delivery_distance_meters
+        )
+        final_total = (
+            Decimal(str(max(0, round(subtotal - discount_amount, 2)))
+            ) + delivery_charge
+        ).quantize(Decimal('0.01'))
+
+
 
         order = Order.objects.create(
             address=address,
             user=user,
             store=store,
             coupon=coupon_obj,
-            discount_amount=discount_amount,
+            discount_amount=Decimal(str(discount_amount)).quantize(Decimal('0.01')),
+            delivery_charge=delivery_charge,
+            delivery_distance_meters=delivery_distance_meters,
             total_amount=final_total,
             **validated_data
         )
@@ -257,5 +369,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'user', 'address', 'phone', 'payment_method', 'status', 'total_amount',
-            'discount_amount', 'coupon', 'notes', 'items', 'created_at', 'updated_at'
+            'discount_amount', 'coupon', 'notes', 'items', 'created_at', 'updated_at','delivery_charge',
+            'delivery_distance_meters','notification_email',
         ]

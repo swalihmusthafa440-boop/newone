@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Product, Category, Review
+from .models import Product, Category, Review, Advertisement
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -43,3 +44,33 @@ class ProductSerializer(serializers.ModelSerializer):
     
     def get_review_count(self, obj):
         return obj.reviews.count()
+
+
+
+class AdvertisementSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Advertisement
+        fields = [
+            'id',
+            'title',
+            'image',
+            'image_url',
+            'is_active',
+            'display_order',
+            'start_date',
+            'end_date',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'image_url']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            url = obj.image.url
+            def get_image_url(self, obj):
+                if obj.image:
+                    return obj.image.url
+                return ''
+        

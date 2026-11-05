@@ -168,7 +168,12 @@ export default function ProductDetail() {
                   <h1 className={styles.productTitle}>{product.name}</h1>
                   <p className={styles.productSubtitle}>
                     {product.category_name || product.category?.name || 'A5 Spiral Notebook'}<br />
-                    <span className={styles.subDetail}>Single line · Premium quality</span>
+                    <span className={styles.subDetail}>
+                      {typeof product.description === 'string' && product.description.trim()
+                        ? product.description.slice(0,30) +
+                        (product.description.length > 45 ? '...' : '')
+                        : 'Premium Stationery'}
+                    </span>
                   </p>
                 </div>
                 {/* Price & Quantity Controls */}

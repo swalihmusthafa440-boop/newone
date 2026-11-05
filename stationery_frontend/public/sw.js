@@ -8,25 +8,3 @@ self.addEventListener('install', (event) => {
   self.skipWaiting()
 })
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  )
-  self.clients.claim()
-})
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event
-  // Cache-first for static, network-first for API
-  if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request).catch(() => caches.match(request))
-    )
-  } else {
-    event.respondWith(
-      caches.match(request).then(cached => cached || fetch(request))
-    )
-  }
-})

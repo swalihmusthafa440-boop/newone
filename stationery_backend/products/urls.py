@@ -10,4 +10,7 @@ urlpatterns = [
     path('products/<int:product_pk>/reviews/', views.ReviewListCreateView.as_view(), name='product-reviews'),
     path('categories/', views.CategoryListView.as_view(), name='category-list'),
     path('admin-stats/', views.admin_stats, name='admin-stats'),
+    path('advertisements/active/',views.ActiveAdvertisementListView.as_view(),name='active-advertisements'),
+    path('admin/advertisements/',views.AdvertisementAdminListCreateView.as_view(),name='admin-advertisements'),
+    path('admin/advertisements/<int:pk>/',views.AdvertisementAdminDetailView.as_view(),name='admin-advertisement-detail'),
 ]

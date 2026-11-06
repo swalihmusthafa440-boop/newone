@@ -33,6 +33,10 @@ def user_data(user):
         'last_name': user.last_name,
         'is_staff': user.is_staff,
     }
+
+
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_login_view(request):
@@ -45,7 +49,6 @@ def google_login_view(request):
         )
 
     try:
-        # Verify the ID token with Google
         google_user = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
@@ -76,37 +79,44 @@ def google_login_view(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Use Google's stable ID to identify returning users.
         username = f'google_{google_id}'
 
         with transaction.atomic():
+
+            # Check whether this Google account has logged in before
             user = User.objects.filter(username=username).first()
 
             if user is None:
-                # Do not silently connect an existing account by email.
-                if User.objects.filter(email__iexact=email).exists():
+
+                # Find an existing account using the verified email
+                existing_users = list(
+                    User.objects.filter(email__iexact=email)[:2]
+                )
+
+                if len(existing_users) > 1:
                     return Response(
-                        {
-                            'detail': (
-                                'An account already uses this email. '
-                                'Please contact the administrator to link it.'
-                            )
-                        },
+                        {'detail': 'Multiple accounts use this email. Please contact support.'},
                         status=status.HTTP_409_CONFLICT
                     )
 
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=google_user.get('given_name', ''),
-                    last_name=google_user.get('family_name', ''),
-                )
+                if len(existing_users) == 1:
+                    # Use the existing account
+                    user = existing_users[0]
+
+                else:
+                    # Create a new account only if email does not exist
+                    user = User.objects.create_user(
+                        username=username,
+                        email=email,
+                        first_name=google_user.get('given_name', ''),
+                        last_name=google_user.get('family_name', '')
+                    )
 
         tokens = get_tokens_for_user(user)
 
         return Response({
             **tokens,
-            'user': user_data(user),
+            'user': user_data(user)
         })
 
     except ValueError:
@@ -114,6 +124,11 @@ def google_login_view(request):
             {'detail': 'Google sign-in verification failed.'},
             status=status.HTTP_401_UNAUTHORIZED
         )
+
+
+
+
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

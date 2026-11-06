@@ -17,6 +17,7 @@ import FloatingCart from './components/FloatingCart'
 import './index.css'
 import Accountpage from './pages/accountpage'
 import MyCredits from './pages/MyCredits'
+import LegalPages from './pages/LegalPages'
 
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
                 <Route path="*" element={<NotFound />} />
                 <Route path='/accountpage' element={<Accountpage/>}/>
                 <Route path="/my-credits" element={<MyCredits />} />
+                <Route path="/policies/:slug" element={<LegalPages />}/>
+
               </Routes>
               {/* Floating Cart Button near bottom-left on shopping pages */}
               <FloatingCart />

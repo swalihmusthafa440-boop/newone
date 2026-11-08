@@ -2,8 +2,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+
+def api_home(request):
+    return JsonResponse({
+        "message": "StatioMart API is running successfully!",
+        "status": "success"
+    })
 
 urlpatterns = [
+    path('', api_home, name='api_home'),
     path('admin/', admin.site.urls),
     path('api/', include('products.urls')),
     path('api/', include('orders.urls')),

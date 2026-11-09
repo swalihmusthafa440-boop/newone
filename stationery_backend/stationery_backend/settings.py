@@ -72,7 +72,7 @@ if os.environ.get('DATABASE_URL'):
 
     DATABASES = {
         'default': dj_database_url.parse(
-            os.environ['DATABASE_URL'],
+            os.environ['postgresql://neondb_owner:npg_MloHS4fjyX6h@ep-frosty-shape-beg162n5-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'],
             conn_max_age=600,
             ssl_require=True
         )

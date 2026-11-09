@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
 try:
     from decouple import config
 except ImportError:
@@ -68,8 +69,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stationery_backend.wsgi.application'
 
 if os.environ.get('DATABASE_URL'):
-    import dj_database_url
-
     DATABASES = {
         'default': dj_database_url.parse(
             os.environ['DATABASE_URL'],

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
 })
 
 api.interceptors.request.use(
@@ -32,7 +32,7 @@ api.interceptors.response.use(
       if (refresh) {
         originalRequest._retry = true
         try {
-          const res = await axios.post('/api/auth/token/refresh/', { refresh })
+          const res = await api.post('/auth/token/refresh/', { refresh })
           const { access } = res.data
           localStorage.setItem('stationery_access_token', access)
           originalRequest.headers.Authorization = `Bearer ${access}`
@@ -74,56 +74,39 @@ export const createProduct = (data) =>
 export const deleteProduct = (id) => api.delete(`/products/${id}/`)
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/`, { status })
 export const sendChatMessage = (message, context = {}, cart_items = []) => api.post('/chatbot/', { message, context, cart_items })
-
-
-
-
 /* Delivery cash handover */
 export const getDeliveryHandover = (orderId) =>
   api.get(`/orders/${orderId}/delivery-handover/`)
-
 export const saveDeliveryHandover = (orderId, data) =>
   api.post(`/orders/${orderId}/delivery-handover/`, data)
-
 /* Admin customer credits */
 export const getAdminCredits = (params = {}) =>
   api.get('/credits/', { params })
-
 export const getCreditDetails = (creditId) =>
   api.get(`/credits/${creditId}/`)
-
 export const updateCustomerCredit = (creditId, data) =>
   api.patch(`/credits/${creditId}/`, data)
-
 export const recordCreditPayment = (creditId, data) =>
   api.post(`/credits/${creditId}/payments/`, data)
-
 /* Customer's own credits */
 export const getMyCredits = () =>
   api.get('/my-credits/')
-
 // Public: Homepage advertisements
 export const getActiveAdvertisements = () =>
   api.get('/advertisements/active/')
-
 // Admin: Get all advertisements
 export const getAdvertisements = () =>
   api.get('/admin/advertisements/')
-
 // Admin: Upload advertisement
 export const createAdvertisement = (formData) =>
   api.post('/admin/advertisements/', formData)
-
 // Admin: Update advertisement
 export const updateAdvertisement = (id, formData) =>
   api.patch(`/admin/advertisements/${id}/`, formData)
-
 // Admin: Delete advertisement
 export const deleteAdvertisement = (id) =>
   api.delete(`/admin/advertisements/${id}/`)
-
 /* In-app notifications */
-
 export const getNotifications = () =>
   api.get('/notifications/')
 

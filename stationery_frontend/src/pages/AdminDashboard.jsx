@@ -281,41 +281,28 @@ export default function AdminDashboard() {
     setReportError('')
 
     try {
-      const token =
-        localStorage.getItem('stationery_access_token') ||
-        localStorage.getItem('access_token')||
-        localStorage.getItem('access')
-
-      if (!token) {
-        throw new Error('Please login again.')
-      }
-
-      const params = new URLSearchParams({
-        from_date: reportFromDate,
-        to_date: reportToDate,
-        category: reportCategory,
-      })
-
-      const response = await fetch(
-        `/api/admin/reports/category-sales/?${params}`,
+      const response = await api.get(
+        'admin/reports/category-sales/',
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
+          params: {
+            from_date: reportFromDate,
+            to_date: reportToDate,
+            category: reportCategory,
           },
         }
       )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || 'Failed to load report.'
-        )
-      }
-
-      setReportData(data)
+    
+      setReportData(response.data)
+    
     } catch (error) {
-      setReportError(error.message || 'Failed to load report.')
+      console.error('Report API Error:', error.response?.data || error)
+    
+      setReportError(
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        error.message ||
+        'Failed to load report.'
+      )
     } finally {
       setReportLoading(false)
     }

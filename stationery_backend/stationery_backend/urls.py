@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 from django.db import connection
+from django.contrib.auth import get_user_model
 
 
 def api_home(request):
@@ -19,9 +20,16 @@ def database_check(request):
         cursor.execute("SELECT current_database()")
         db_name = cursor.fetchone()[0]
 
+    User = get_user_model()
+    admin_user = User.objects.filter(username="admin").first()
+
     return JsonResponse({
         "database": db_name,
-        "status": "connected"
+        "status": "connected",
+        "admin_exists": admin_user is not None,
+        "is_active": admin_user.is_active if admin_user else False,
+        "is_staff": admin_user.is_staff if admin_user else False,
+        "is_superuser": admin_user.is_superuser if admin_user else False,
     })
 
 urlpatterns = [

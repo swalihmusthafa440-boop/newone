@@ -15,6 +15,7 @@ from django.db import models
 
 class ProductListView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
+    parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description', 'category__name']
     ordering_fields = ['name', 'price', 'created_at', 'stock']
@@ -67,6 +68,7 @@ class ProductListView(generics.ListCreateAPIView):
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.select_related('category').prefetch_related('reviews')
+    parser_classes = [MultiPartParser, FormParser]
     serializer_class = ProductSerializer
 
     def get_permissions(self):

@@ -67,10 +67,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
-            request = self.context.get('request')
-            url = obj.image.url
-            def get_image_url(self, obj):
-                if obj.image:
-                    return obj.image.url
-                return ''
+            return obj.image.url
+        return ''
         

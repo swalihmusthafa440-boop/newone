@@ -5,6 +5,9 @@ from django.conf.urls.static import static
 from django.http import JsonResponse
 from django.db import connection
 from django.contrib.auth import get_user_model
+import os
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 
 def api_home(request):
@@ -32,7 +35,39 @@ def database_check(request):
         "is_superuser": admin_user.is_superuser if admin_user else False,
     })
 
+
+@csrf_exempt
+def admin_password_check(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    diagnostic_key = os.environ.get("ADMIN_DIAGNOSTIC_KEY")
+
+    if not diagnostic_key or request.headers.get("X-Diagnostic-Key") != diagnostic_key:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        password = data.get("password", "")
+
+        User = get_user_model()
+        user = User.objects.filter(username="admin").first()
+
+        if not user:
+            return JsonResponse({"admin_exists": False})
+
+        return JsonResponse({
+            "admin_exists": True,
+            "password_valid": user.check_password(password)
+        })
+
+    except Exception:
+        return JsonResponse({"error": "Check failed"}, status=400)
+
+
+
 urlpatterns = [
+    path('admin-password-check/', admin_password_check),
     path('database-check/', database_check),    
     path('', api_home, name='api_home'),
     path('admin/', admin.site.urls),

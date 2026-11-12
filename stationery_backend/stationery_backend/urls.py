@@ -18,7 +18,13 @@ urlpatterns = [
     path('api/', include('products.urls')),
     path('api/', include('orders.urls')),
     path('api/auth/', include('auth_api.urls')),
-    path('api/chatbot/',include('chatbot.urls')),
-    path("api/",include('whatsapp.urls')),
-    path("api/admin/",include('adminpanel.urls'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/chatbot/', include('chatbot.urls')),
+    path('api/', include('whatsapp.urls')),
+    path('api/admin/', include('adminpanel.urls')),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )

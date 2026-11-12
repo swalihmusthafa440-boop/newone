@@ -53,6 +53,20 @@ const CATEGORY_ICONS = {
   ),
 }
 
+function getAdvertisementImage(ad) {
+  const image = ad.image_url || ad.image;
+  if (!image) return '';
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+  if (image.startsWith('/media/')) {
+    return image;
+    }
+    return `/media/${image.replace(/^\/+/, '')}`;
+}
+
+
+
 export default function ProductSelection() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -214,6 +228,11 @@ export default function ProductSelection() {
     return () => clearInterval(interval);
   }, [advertisements.length, adsPerView, maxAdIndex]);
 
+
+
+
+
+
   return (
     <div className={styles.page}>
       <Header />
@@ -266,9 +285,16 @@ export default function ProductSelection() {
                   <div className={styles.adSlide} key={ad.id}>
                     <img
                       className={styles.adImage}
-                      src={`/media/${ad.image.split('/media/')[1]}`}
+                      src={getAdvertisementImage(ad)}
                       alt={ad.title || 'Advertisement'}
                       draggable="false"
+                      onError={(e) => {
+                        console.error("Banner failed:", {
+                        src: e.currentTarget.src,
+                        naturalWidth: e.currentTarget.naturalWidth,
+                        error: e.currentTarget.error
+                      });
+                    }}
                     />
                   </div>
                 ))}

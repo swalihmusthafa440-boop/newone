@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 class Review(models.Model):
-
-
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.PositiveSmallIntegerField(default=5)

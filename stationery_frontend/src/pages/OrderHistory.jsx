@@ -227,7 +227,7 @@ export default function OrderHistory() {
           })}
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

@@ -92,7 +92,7 @@ export default function OrderConfirmation() {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   )
 }

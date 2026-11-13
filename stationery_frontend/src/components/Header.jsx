@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import styles from './Header.module.css'
 import { enablePushNotifications } from '../utils/pushNotifications'
 import { getNotifications, markNotificationRead } from '../api/api'
+import { Info } from "lucide-react";
 
 export default function Header() {
   const { totalItems } = useCart()
@@ -444,7 +445,13 @@ export default function Header() {
                 </div>
                 <span className={styles.chavron}>›</span>
               </button>
-
+              <button className={styles.menuItem} onClick={() => {navigate('/footer')}}>
+                <div className={styles.menuItemLeft}>
+                  <Info size={22} strokeWidth={2} />
+                  <span>About</span>
+                </div>
+                <span className={styles.chevron}>›</span>
+              </button>
               {isLoggedIn ? (
                 <button
                   className={styles.menuItem}
@@ -476,6 +483,8 @@ export default function Header() {
                   <span className={styles.chevron}>›</span>
                 </button>
               )}
+
+              
             </div>
 
             {/* Bottom Graphic matching Reference */}

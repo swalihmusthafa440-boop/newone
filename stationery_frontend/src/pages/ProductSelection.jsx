@@ -54,26 +54,17 @@ const CATEGORY_ICONS = {
 }
 
 function getAdvertisementImage(ad) {
-  console.log("ADVERTISEMENT DATA:", ad);
-
   const image = ad.image_url || ad.image;
-
-  console.log("IMAGE VALUE:", image);
-
-  if (!image || image === "undefined" || image === "null") {
-    return '';
-  }
-
+  if (!image) return '';
   if (/^https?:\/\//i.test(image)) {
     return image;
   }
-
   if (image.startsWith('/media/')) {
     return image;
-  }
-
-  return `/media/${image.replace(/^\/+/, '')}`;
+    }
+    return `/media/${image.replace(/^\/+/, '')}`;
 }
+
 
 
 export default function ProductSelection() {
@@ -398,7 +389,7 @@ export default function ProductSelection() {
         </section>
       </main>
 
-      <Footer />
+      
     </div>
   )
 }

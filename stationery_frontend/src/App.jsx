@@ -18,6 +18,7 @@ import './index.css'
 import Accountpage from './pages/accountpage'
 import MyCredits from './pages/MyCredits'
 import LegalPages from './pages/LegalPages'
+import Footer from './components/Footer'
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
                 <Route path='/accountpage' element={<Accountpage/>}/>
                 <Route path="/my-credits" element={<MyCredits />} />
                 <Route path="/policies/:slug" element={<LegalPages />}/>
+                <Route path='/footer' element={<Footer />}/>
 
               </Routes>
               {/* Floating Cart Button near bottom-left on shopping pages */}

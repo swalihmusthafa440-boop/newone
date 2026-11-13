@@ -272,7 +272,7 @@ export default function MyCredits() {
 
       </main>
 
-      <Footer />
+      
 
     </div>
   )

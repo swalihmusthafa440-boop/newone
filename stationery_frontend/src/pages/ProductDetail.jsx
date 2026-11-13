@@ -140,7 +140,7 @@ export default function ProductDetail() {
             Back to Shop
           </button>
         </div>
-        <Footer />
+        
       </div>
     )
   }
@@ -454,7 +454,7 @@ export default function ProductDetail() {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   )
 }
